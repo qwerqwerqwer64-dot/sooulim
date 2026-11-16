@@ -129,6 +129,7 @@ kbd{font-family:inherit;font-size:10.5px;opacity:.65;margin-left:4px;border:1px 
     <div class="row"><span>고도</span><span id="alt">0 m</span></div>
     <div class="row"><span>정상까지</span><span id="dist">—</span></div>
     <div class="row"><span>도감</span><span id="dexc">0 / 16</span></div>
+    <div class="row"><span>함께 걷는 사람</span><span id="online">혼자</span></div>
     <div class="hidden" id="spdrow"><div class="row"><span>속도</span><span id="spd">0 km/h</span></div><div class="row"><span>기어</span><span id="gear" style="font-weight:700;color:#ffb27a">1단</span></div><div id="rpmbar" style="position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:4px"><div id="rpmfill" style="height:100%;width:0;background:linear-gradient(90deg,#8fd18a,#ffd27a 70%,#ff6a4a)"></div><div style="position:absolute;right:0;top:0;bottom:0;width:12%;background:rgba(255,80,60,.25)"></div></div><div style="font-size:10.5px;color:var(--dim);margin-top:2px" id="rpmtxt">1500 rpm</div></div>
     <div class="row hidden" id="towerrow"><span>돌탑</span><span id="towertxt">0층</span></div>
     <div id="calmbar"><div id="calmfill"></div></div>
@@ -167,7 +168,7 @@ kbd{font-family:inherit;font-size:10.5px;opacity:.65;margin-left:4px;border:1px 
   <canvas id="mapbig"></canvas>
   <div id="maplegend">
     <span><i style="background:#fff3c4"></i>나</span><span><i style="background:#e8d2a0"></i>산길</span><span><i style="background:#ffd27a;border-radius:2px"></i>지나온 길</span>
-    <span><i style="background:#5aa0c8"></i>연못</span><span><i style="background:#8fd18a"></i>주변 동물</span><span><i style="background:#ff8a3c;border-radius:2px"></i>바이크</span><span>▲ 정상 · ◆ 이정표 · ✦ 신목</span>
+    <span><i style="background:#5aa0c8"></i>연못</span><span><i style="background:#8fd18a"></i>주변 동물</span><span><i style="background:#ff8a3c;border-radius:2px"></i>바이크</span><span><i style="background:#9fd0ff"></i>함께 걷는 사람</span><span>▲ 정상 · ◆ 이정표 · ✦ 신목</span>
   </div>
   <div style="text-align:right;margin-top:10px"><button class="btn" id="mapclose">닫기 (N)</button></div>
 </div></div>
@@ -206,6 +207,10 @@ kbd{font-family:inherit;font-size:10.5px;opacity:.65;margin-left:4px;border:1px 
   <p>바람이 나뭇잎을 흔들고, 멀리서 새가 웁니다.<br>
   숲의 동물들은 저마다 성격이 달라요. 겁이 많아 달아나는 아이,<br>느긋하게 바라보는 아이, 먼저 다가와 애교 부리는 아이.<br>
   가만히 멈춰 고요해질수록 더 귀한 동물과 자연 현상을 만날 수 있어요.<br>정상에 오르면 돌을 주워 나만의 돌탑을 쌓아보세요.</p>
+  <div style="margin-top:18px"><input id="pname" maxlength="12" placeholder="숲에서 쓸 이름 (예: 숲속 산책자)" autocomplete="off" style="font:inherit;font-size:14px;text-align:center;color:var(--ink);background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:999px;padding:10px 16px;width:min(280px,80vw);outline:none;user-select:text;-webkit-user-select:text"></div>
+  <div style="font-size:11.5px;color:var(--dim);margin-top:6px">다른 사람들에게 이 이름이 보여요 · 지금 함께 걷는 사람이 숲에 나타나요</div>
+  <button id="go" disabled>숲으로 들어가기</button>
+  <div id="loadmsg">숲을 가꾸는 중…</div>
   <div id="ctl">
     <b>WASD / 방향키</b><span>걷기 (Shift 달리기)</span>
     <b>Space</b><span>점프</span>
@@ -217,8 +222,6 @@ kbd{font-family:inherit;font-size:10.5px;opacity:.65;margin-left:4px;border:1px 
     <b>K · L</b><span>소원 돌탑 기록(정상에서) · 게임 설명서</span>
     <b>T · Y · H</b><span>시간대 · 계절 · 사진 모드</span>
   </div>
-  <button id="go" disabled>숲으로 들어가기</button>
-  <div id="loadmsg">숲을 가꾸는 중…</div>
   <div style="font-size:11.5px;color:var(--dim);margin-top:8px">헤드폰을 끼면 더 좋아요</div>
 </div></div>
 
@@ -616,7 +619,7 @@ const matCache=new Map();
 function M(c,o){const k=c+JSON.stringify(o||{});if(!matCache.has(k))matCache.set(k,new THREE.MeshLambertMaterial({color:c,flatShading:true,...o}));return matCache.get(k)}
 const GS=new THREE.SphereGeometry(1,12,9),GC=new THREE.CylinderGeometry(1,1,1,8),GK=new THREE.ConeGeometry(1,1,8),GB=new THREE.BoxGeometry(1,1,1);
 function part(geo,mat,x,y,z,sx,sy,sz,parent,rx=0,ry=0,rz=0){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy??sx,sz??sx);m.rotation.set(rx,ry,rz);m.castShadow=true;parent.add(m);return m}
-function buildHiker(){const g=new THREE.Group();const skin=M(0xe2b48c),shirt=M(0x55705c),pants=M(0x3b3d47),pack=M(0x8c4d30),hat=M(0xcaa46a),boot=M(0x3b2a20);
+function buildHiker(shirtC=0x55705c,packC=0x8c4d30){const g=new THREE.Group();const skin=M(0xe2b48c),shirt=M(shirtC),pants=M(0x3b3d47),pack=M(packC),hat=M(0xcaa46a),boot=M(0x3b2a20);
   const legs=[],arms=[];for(const s of[-1,1]){const l=new THREE.Group();l.position.set(s*.11,.92,0);g.add(l);part(GC,pants,0,-.42,0,.078,.85,.078,l);part(GB,boot,0,-.86,.04,.13,.1,.24,l);legs.push(l)}
   part(GC,shirt,0,1.25,0,.22,.62,.17,g);part(GS,shirt,0,1.52,0,.24,.12,.18,g);
   for(const s of[-1,1]){const a=new THREE.Group();a.position.set(s*.29,1.5,0);g.add(a);part(GC,shirt,0,-.28,0,.06,.56,.06,a);part(GS,skin,0,-.6,0,.065,.065,.065,a);arms.push(a)}
@@ -960,6 +963,8 @@ function drawMarkers(g,toPx,scale,arrowSize){
   if(player.trail.length>1){g.beginPath();player.trail.forEach((p,i)=>{const[a,b]=toPx(p.x,p.z);i?g.lineTo(a,b):g.moveTo(a,b)});const[a,b]=toPx(player.pos.x,player.pos.z);g.lineTo(a,b);g.strokeStyle='rgba(255,210,122,.85)';g.lineWidth=Math.max(1.5,scale*.9);g.setLineDash([3,3]);g.stroke();g.setLineDash([])}
   for(const a of animals){if(!a.seen)continue;const[x,y]=toPx(a.rig.root.position.x,a.rig.root.position.z);g.fillStyle=RCOL[a.sp.rar];g.beginPath();g.arc(x,y,Math.max(3,arrowSize*.32),0,7);g.fill();g.strokeStyle='rgba(0,0,0,.5)';g.lineWidth=1;g.stroke()}
   if(!bike.riding){const[bx,by]=toPx(bike.pos.x,bike.pos.z);const s=Math.max(4,arrowSize*.45);g.fillStyle='#ff8a3c';g.strokeStyle='#2a1d10';g.lineWidth=1.5;g.fillRect(bx-s,by-s,s*2,s*2);g.strokeRect(bx-s,by-s,s*2,s*2)}
+  for(const p of NET.peers.values()){if(!p.init)continue;const[qx,qy]=toPx(p.pos.x,p.pos.z);g.fillStyle='#9fd0ff';g.strokeStyle='#10202a';g.lineWidth=1.5;g.beginPath();g.arc(qx,qy,Math.max(3.5,arrowSize*.4),0,7);g.fill();g.stroke();
+    if(arrowSize>10){g.font=`600 ${Math.round(arrowSize*.8)}px "Noto Sans KR", sans-serif`;g.textAlign='center';g.fillStyle='#e8f4ff';g.fillText(p.name,qx,qy-arrowSize*.7)}}
   const[px,py]=toPx(player.pos.x,player.pos.z);g.save();g.translate(px,py);g.rotate(Math.PI-yaw);
   g.fillStyle='rgba(255,243,196,.18)';g.beginPath();g.moveTo(0,0);g.arc(0,0,arrowSize*2.6,-Math.PI/2-.55,-Math.PI/2+.55);g.closePath();g.fill();
   g.fillStyle='#fff3c4';g.strokeStyle='#2a1d10';g.lineWidth=1.5;g.beginPath();g.moveTo(0,-arrowSize);g.lineTo(arrowSize*.65,arrowSize*.7);g.lineTo(0,arrowSize*.35);g.lineTo(-arrowSize*.65,arrowSize*.7);g.closePath();g.fill();g.stroke();g.restore()}
@@ -1082,6 +1087,7 @@ etc:`<h3>지도 (N)</h3><ul><li>오른쪽 위 미니맵: 등고선, 산길, 연�
 <h3>도감 (C)</h3><ul><li>"동물"과 "자연 현상" 탭. 만난 횟수와 교감 횟수가 기록되고, 못 만난 것은 힌트가 보여요.</li><li>도감과 최고 기록은 이 브라우저에 저장돼요.</li></ul>
 <h3>그 밖에</h3><table><tr><td>K</td><td>소원 돌탑 기록 (정상 도착 후)</td></tr><tr><td>L</td><td>이 설명서</td></tr><tr><td>H</td><td>사진 모드 (화면 정보 숨기기)</td></tr>
 <tr><td>G</td><td>그래픽 높음/낮음 (버벅이면 낮음으로)</td></tr><tr><td>M</td><td>소리 켜기/끄기</td></tr><tr><td>Esc</td><td>열린 창 닫기, 돌 올리기 취소</td></tr></table>
+<h3>함께 걷기</h3><ul><li>같은 시간에 접속한 사람들이 이름표를 달고 숲에 보여요. 걷기·점프·바이크까지 그대로 보여요.</li><li>왼쪽 위에 함께 있는 사람 수, 지도에 하늘색 점으로 위치가 보여요.</li><li>동물·날씨·돌탑은 각자 화면에서 따로예요. 다만 다른 사람의 바이크 소리에는 내 화면의 동물도 놀라요.</li><li>사람이 많아지면 서버 한도 때문에 다른 사람 움직임이 조금 끊겨 보일 수 있어요.</li></ul>
 <h3>숨은 장소</h3><ul><li>연못 3곳 (물소리·물방울 소리), 금줄을 두른 신목, 길가의 오래된 거목들, 정상의 돌탑.</li></ul>`,
 mobile:`<h3>터치 조작</h3><table><tr><td>화면 왼쪽 드래그</td><td>이동 (가상 조이스틱)</td></tr><tr><td>화면 오른쪽 드래그</td><td>둘러보기</td></tr>
 <tr><td>교감 버튼</td><td>E와 같아요 (교감, 돌 줍기·올리기)</td></tr><tr><td>점프 버튼</td><td>점프, 돌 올리기</td></tr><tr><td>달리기 버튼</td><td>달리기 켜기/끄기 · 바이크에선 "기어▲"</td></tr>
@@ -1389,11 +1395,54 @@ function updateCamera(dt){if(bike.riding&&T-lastLook>1.6&&Math.abs(bike.speed)>1
     camWant.copy(camTarget).addScaledVector(d,-cd);const gy=terrainHeight(camWant.x,camWant.z)+.5;if(camWant.y<gy)camWant.y=gy;
     if(!camInit){camera.position.copy(camWant);camInit=true}else camera.position.lerp(camWant,1-Math.exp(-dt*12));const cy=terrainHeight(camera.position.x,camera.position.z)+.35;if(camera.position.y<cy)camera.position.y=cy;camera.lookAt(camTarget)}}
 
+/* ================= multiplayer (Supabase Realtime) ================= */
+const NET={ch:null,id:null,name:'',ci:0,peers:new Map(),sendT:0,ready:false,lastSent:null};
+const AVA=[[0x4f7fb8,0x2f4f7a],[0xb85a4f,0x6e3328],[0x7a5fb0,0x45337a],[0x3f9a84,0x24584b],[0xc08a3a,0x7a5420],[0x8a9a3a,0x505a20],[0xb04f86,0x6a2f50],[0x3a8ab0,0x225470]];
+function nameTag(text){const c=document.createElement('canvas');c.width=256;c.height=64;const g=c.getContext('2d');g.font='600 28px "Noto Sans KR", sans-serif';const w=Math.min(250,g.measureText(text).width+30);
+  g.fillStyle='rgba(14,22,16,.62)';const x=128-w/2;g.beginPath();g.moveTo(x+16,8);g.arcTo(x+w,8,x+w,56,16);g.arcTo(x+w,56,x,56,16);g.arcTo(x,56,x,8,16);g.arcTo(x,8,x+w,8,16);g.fill();
+  g.fillStyle='#f3ead6';g.textAlign='center';g.textBaseline='middle';g.fillText(text,128,33);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false,fog:false}));sp.scale.set(1.5,.375,1);sp.position.y=2.35;sp.renderOrder=5;return sp}
+const cleanName=n=>String(n||'').replace(/[\u0000-\u001f]/g,'').slice(0,12)||'산책자';
+function riderPose(h,on){if(on){h.g.position.set(0,.12,-.24);h.g.rotation.set(.28,0,0);h.legs.forEach(l=>l.rotation.set(-.62,0,0));h.legs[0].rotation.z=.12;h.legs[1].rotation.z=-.12;h.arms.forEach((a,i)=>a.rotation.set(-1.05,0,i?-.18:.18))}
+  else{h.g.rotation.set(0,0,0);h.legs.forEach(l=>l.rotation.set(0,0,0));h.arms.forEach(a=>a.rotation.set(0,0,0))}}
+function getPeer(id,name,ci){let p=NET.peers.get(id);if(p){if(name&&name!==p.name){p.name=name;p.h.g.remove(p.tag);p.tag=nameTag(name);p.h.g.add(p.tag)}return p}
+  const col=AVA[(ci|0)%AVA.length];const h=buildHiker(col[0],col[1]);h.g.visible=false;scene.add(h.g);const tag=nameTag(cleanName(name));h.g.add(tag);
+  p={id,name:cleanName(name),ci:ci|0,h,tag,bk:null,riding:false,t:null,pos:new THREE.Vector3(),face:0,phase:0,seen:T,init:false};NET.peers.set(id,p);return p}
+function removePeer(id){const p=NET.peers.get(id);if(!p)return;scene.remove(p.h.g);if(p.bk)scene.remove(p.bk.g);NET.peers.delete(id);updateOnline()}
+function updateOnline(){const n=NET.peers.size;$('online').textContent=n?`${n+1}명 (나 포함)`:(NET.ready?'혼자':'연결 중…')}
+async function startNet(name){NET.name=cleanName(name);NET.ci=Math.floor(Math.random()*AVA.length);
+  for(let i=0;i<40&&!W.sb;i++)await new Promise(r=>setTimeout(r,500));if(!W.sb){$('online').textContent='오프라인';return}
+  NET.id=W.me||('g-'+Math.random().toString(36).slice(2,10));
+  const ch=W.sb.channel('forest-world',{config:{broadcast:{self:false},presence:{key:NET.id}}});NET.ch=ch;
+  ch.on('broadcast',{event:'pos'},({payload:d})=>{if(!d||d.i===NET.id)return;const p=getPeer(d.i,d.n,d.k);p.t=d;p.seen=T;if(!p.init){p.init=true;p.pos.set(d.x,d.y,d.z);p.face=d.f;p.h.g.visible=true}})
+    .on('broadcast',{event:'hello'},({payload:d})=>{if(d&&d.i!==NET.id)NET.sendT=0})
+    .on('presence',{event:'join'},({key,newPresences})=>{if(key===NET.id)return;const m=newPresences&&newPresences[0];const p=getPeer(key,m&&m.name,m&&m.ci);p.seen=T;updateOnline();NET.sendT=0;if(NET.ready)toast('함께 걷기',`${p.name}님이 숲에 들어왔어요`,'지도(N)에서 위치를 볼 수 있어요','#9fd0ff')})
+    .on('presence',{event:'leave'},({key})=>{if(key===NET.id)return;const p=NET.peers.get(key);if(p)toast('함께 걷기',`${p.name}님이 숲을 떠났어요`,'','#9fd0ff');removePeer(key)})
+    .on('presence',{event:'sync'},()=>{const st=ch.presenceState();for(const k in st){if(k===NET.id)continue;const m=st[k][0];getPeer(k,m&&m.name,m&&m.ci).seen=T}for(const k of[...NET.peers.keys()])if(!st[k])removePeer(k);updateOnline()})
+    .subscribe(async status=>{if(status==='SUBSCRIBED'){NET.ready=true;try{await ch.track({name:NET.name,ci:NET.ci})}catch(e){}ch.send({type:'broadcast',event:'hello',payload:{i:NET.id}});NET.sendT=0;updateOnline()}
+      else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){$('online').textContent='연결 끊김'}})}
+function netSend(dt){if(!NET.ready||!NET.ch||!NET.peers.size)return;NET.sendT-=dt;if(NET.sendT>0)return;
+  const n=NET.peers.size,moving=bike.riding?Math.abs(bike.speed)>.2||bike.air:(player.speed>.2||!player.onGround);
+  const hz=moving?clamp(60/(n*(n+1)),.5,5):.4;NET.sendT=1/hz;
+  const d=bike.riding?{i:NET.id,n:NET.name,k:NET.ci,x:+bike.pos.x.toFixed(2),y:+bike.pos.y.toFixed(2),z:+bike.pos.z.toFixed(2),f:+bike.heading.toFixed(3),s:+Math.abs(bike.speed).toFixed(1),b:1,p:+bike.pitch.toFixed(3),r:+bike.roll.toFixed(3),a:bike.air?1:0}
+    :{i:NET.id,n:NET.name,k:NET.ci,x:+player.pos.x.toFixed(2),y:+player.pos.y.toFixed(2),z:+player.pos.z.toFixed(2),f:+player.face.toFixed(3),s:+player.speed.toFixed(1),b:0,a:player.onGround?0:1};
+  NET.ch.send({type:'broadcast',event:'pos',payload:d})}
+function updatePeers(dt){for(const p of NET.peers.values()){const t=p.t;if(!t)continue;if(T-p.seen>30){removePeer(p.id);continue}
+    const k=1-Math.exp(-dt*8);p.pos.x=lerp(p.pos.x,t.x,k);p.pos.y=lerp(p.pos.y,t.y,k);p.pos.z=lerp(p.pos.z,t.z,k);p.face+=angDiff(t.f,p.face)*k;
+    if(t.b){if(!p.bk){p.bk=buildBike();scene.add(p.bk.g)}if(!p.riding){p.riding=true;p.bk.g.visible=true;p.bk.body.add(p.h.g);riderPose(p.h,true)}
+      p.bk.g.position.copy(p.pos);p.bk.g.rotation.set(-(t.p||0),p.face,t.r||0);p.bk.wheels.forEach(w=>w.rotation.x+=(t.s||0)/.36*dt);
+      if(t.s>3&&!t.a&&Math.random()<dt*t.s*1.5)emitDust(p.pos.x-Math.sin(p.face)*.75,p.pos.y,p.pos.z-Math.cos(p.face)*.75,-Math.sin(p.face)*t.s,-Math.cos(p.face)*t.s);
+      for(const a of animals){if(a.state==='flee'||a.state==='vanish'||a.state==='fly')continue;const dd=Math.hypot(a.rig.root.position.x-p.pos.x,a.rig.root.position.z-p.pos.z);if(dd<28)scareByEngine(a,dd)}}
+    else{if(p.riding){p.riding=false;scene.add(p.h.g);riderPose(p.h,false);if(p.bk)p.bk.g.visible=false}
+      p.h.g.position.copy(p.pos);p.h.g.rotation.y=p.face;const sp=t.s||0;
+      if(t.a){p.h.legs[0].rotation.x=-.7;p.h.legs[1].rotation.x=.35;p.h.arms.forEach(a=>a.rotation.x=-.9)}
+      else{p.phase+=dt*sp*1.9;const sw=Math.sin(p.phase)*Math.min(.75,sp*.14);p.h.legs[0].rotation.x=sw;p.h.legs[1].rotation.x=-sw;p.h.arms[0].rotation.x=-sw*.8;p.h.arms[1].rotation.x=sw*.8}}}}
+
 /* ================= main loop ================= */
 const clock=new THREE.Clock();let T=0,hudT=0,gust=.5,promptTxt='';const sunDir=new THREE.Vector3();
 function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.05);T+=dt;
   updateTOD(dt);const alt01=clamp(player.pos.y/TOP,0,1);
-  if(started){updatePlayer(dt);updateAnimals(dt);updateDust(dt);updateCairn(dt);updateShoot(dt);if(bike.riding){for(const a of animals){if(a.state==='flee'||a.state==='vanish'||a.state==='fly')continue;const d=Math.hypot(a.rig.root.position.x-bike.pos.x,a.rig.root.position.z-bike.pos.z);if(d<(Math.abs(bike.speed)>8?40:28))scareByEngine(a,d)}}else poseBike(dt);updateHearts(dt);updatePhen(dt,alt01);
+  if(started){updatePlayer(dt);netSend(dt);updatePeers(dt);updateAnimals(dt);updateDust(dt);updateCairn(dt);updateShoot(dt);if(bike.riding){for(const a of animals){if(a.state==='flee'||a.state==='vanish'||a.state==='fly')continue;const d=Math.hypot(a.rig.root.position.x-bike.pos.x,a.rig.root.position.z-bike.pos.z);if(d<(Math.abs(bike.speed)>8?40:28))scareByEngine(a,d)}}else poseBike(dt);updateHearts(dt);updatePhen(dt,alt01);
     const rate=bike.riding?.2:player.speed>6?.4:player.speed>.3?1:1+player.calm*1.6;spawnT-=dt*rate;if(spawnT<=0){if(animals.length<3&&trySpawn())spawnT=RR(12,26);else spawnT=3}}
   updateCamera(dt);
   gust=clamp(.5+vnoise(T*.11,3.7,9)*.55+vnoise(T*.37,1.1,4)*.18+phen.petals*.35,0,1);const spirit=animals.some(a=>a.sp.kind==='spirit'&&a.state!=='vanish');
@@ -1439,12 +1488,14 @@ addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updat
   const p0=PATH[0],p1=PATH[6];player.pos.set(p0.x,terrainHeight(p0.x,p0.z),p0.z);yaw=Math.atan2(p1.x-p0.x,p1.z-p0.z);player.face=yaw;hiker.g.rotation.y=yaw;
   placeBike(p0.x-Math.cos(yaw)*2.4+Math.sin(yaw)*1.5,p0.z+Math.sin(yaw)*2.4+Math.cos(yaw)*1.5,yaw);
   initCairn();todLabel();renderDex();frame();initWishes();
-  const go=$('go');go.disabled=false;loadmsg.textContent='';
-  go.addEventListener('click',()=>{try{AU.start();if(AU.ctx.state==='suspended')AU.ctx.resume()}catch(e){console.warn('audio',e)}
+  const go=$('go');go.disabled=false;loadmsg.textContent='';try{$('pname').value=localStorage.getItem('sooulim_name')||''}catch(e){}
+  $('pname').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();go.click()}});
+  go.addEventListener('click',()=>{const nm=$('pname').value.trim()||('산책자'+Math.floor(1000+Math.random()*9000));try{localStorage.setItem('sooulim_name',nm)}catch(e){}$('pname').blur();startNet(nm);updateOnline();
+    try{AU.start();if(AU.ctx.state==='suspended')AU.ctx.resume()}catch(e){console.warn('audio',e)}
     $('start').classList.add('hidden');$('hud').classList.remove('hidden');started=true;player.startTime=performance.now();clock.getDelta();sizeMini();
     if(isTouch){$('touchbtns').classList.remove('hidden');$('hint').textContent='왼쪽 드래그 이동 · 오른쪽 드래그 둘러보기'}
     setTimeout(()=>{$('hint').style.opacity=0},16000);setTimeout(()=>toast('도움말','L 키로 설명서를 열 수 있어요','조작법과 지금까지의 모든 상호작용이 정리돼 있어요','#e8dcc0'),2500)});
-  window.__dbg_unused={player,animals,bike,toggleBike,keys,act,interact,get yaw(){return yaw},set yaw(v){yaw=v},set pitch(v){pitch=v},
+  window.__dbg_unused={getPeer,NET,player,animals,bike,toggleBike,keys,act,interact,get yaw(){return yaw},set yaw(v){yaw=v},set pitch(v){pitch=v},
     force:(id,temper)=>trySpawn(SPECIES.find(s=>s.id===id),temper),rain:()=>startRain(),petals:()=>startPetals(),rainbow:(d)=>{startRainbow();phen.dbl=!!d},phen,setTod:i=>{todIdx=i;todLabel()},setSeason:i=>{seasonIdx=i;todLabel()},snap:()=>{const T2=TODS[todIdx];for(const k of['el','az','si','hi','fm','sh','blink','mo','exp','cloud','night'])cur[k]=T2[k];for(const k of['sun','hs','hg','top','hor','fog','mote'])cur[k].set(T2[k]);const v=SEASONS[seasonIdx].v;seasonU.uSeason.value.set(...v)},tower,looseStones,W,openWish,addWish,stoneInteract,get placing(){return placing},spawnShoot};
 })();
 </script>
