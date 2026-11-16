@@ -140,7 +140,7 @@ kbd{font-family:inherit;font-size:10.5px;opacity:.65;margin-left:4px;border:1px 
     <button data-a="season">계절<kbd>Y</kbd></button>
     <button data-a="map">지도<kbd>N</kbd></button>
     <button data-a="dex">도감<kbd>C</kbd></button>
-    <button data-a="wishes">소원<kbd>K</kbd></button>
+    <button data-a="wishes" id="wishbtn">소원 🔒<kbd>K</kbd></button>
     <button data-a="manual">설명서<kbd>L</kbd></button>
     <button data-a="mute" id="mutebtn">소리 켬<kbd>M</kbd></button>
     <button data-a="photo">사진<kbd>H</kbd></button>
@@ -214,7 +214,7 @@ kbd{font-family:inherit;font-size:10.5px;opacity:.65;margin-left:4px;border:1px 
     <b>V · N · C</b><span>시점 · 지도 · 도감</span>
     <b>F · B</b><span>엔듀로 바이크 타기·내리기 · 부르기</span>
     <b>바이크: Shift / Ctrl·Q</b><span>기어 올리기 / 내리기</span>
-    <b>K · L</b><span>소원 돌탑 기록 · 게임 설명서</span>
+    <b>K · L</b><span>소원 돌탑 기록(정상에서) · 게임 설명서</span>
     <b>T · Y · H</b><span>시간대 · 계절 · 사진 모드</span>
   </div>
   <button id="go" disabled>숲으로 들어가기</button>
@@ -924,6 +924,7 @@ function act(a){
   if(a==='view'){viewFP=!viewFP;hiker.g.visible=!viewFP;$('cross').classList.toggle('hidden',!viewFP||photo);if(!viewFP&&document.pointerLockElement)document.exitPointerLock();pitch=clamp(pitch,-1.25,viewFP?1.2:.45)}
   if(a==='tod'){todIdx=(todIdx+1)%TODS.length;todLabel()}
   if(a==='manual'){for(const id of['dex','mapov','boardov'])$(id).classList.add('hidden');$('manov').classList.toggle('hidden');if(!$('manov').classList.contains('hidden'))renderManual()}
+  if(a==='wishes'&&!player.summit&&$('boardov').classList.contains('hidden')){toast('소원 돌탑','아직 열 수 없어요','정상에 올라 돌탑에 도착하면 모두의 소원을 볼 수 있어요','#e8dcc0');return}
   if(a==='wishes'){dexEl.classList.add('hidden');mapEl.classList.add('hidden');$('manov').classList.add('hidden');$('boardov').classList.toggle('hidden');if(!$('boardov').classList.contains('hidden'))renderBoard(true)}
   if(a==='season'){seasonIdx=(seasonIdx+1)%4;todLabel();const S2=SEASONS[seasonIdx];toast('계절',S2.name,S2.line,S2.col);if(seasonIdx===3){phen.rainTo=0}}
   if(a==='dex'){mapEl.classList.add('hidden');renderDex();dexEl.classList.toggle('hidden')}
@@ -1075,11 +1076,11 @@ cairn:`<h3>돌탑 쌓기 (정상)</h3><ol style="padding-left:18px"><li>정상 �
 <li>3·5·7·10·15층에서 특별한 메시지가 떠요. 최고 기록이 저장돼요.</li><li>돌을 든 채로 다른 곳에서 E를 누르면 내려놓아요. 돌을 들고는 바이크를 탈 수 없어요.</li></ul>
 <h3>소원 남기기</h3><ul><li>돌을 올리는 데 성공하면 그 층에 <b>이름</b>과 <b>소원</b>을 적는 창이 떠요 (이름 12자·소원 60자, Enter로 저장, 건너뛰기 가능). 이름은 다음부터 자동으로 채워져요.</li><li>이름은 누구나 자유롭게 적을 수 있어서, 다른 사람 소원 옆에는 계정 이름도 작게 함께 보여요.</li><li>게임 중에 다른 사람이 소원을 올리면 알림이 떠요.</li>
 <li>소원이 담긴 돌은 은은하게 빛나요. 탑이 무너져도 소원 기록은 남아요.</li>
-<li><b>K</b>: 소원 기록을 채팅처럼 보기. "모두의 소원 / 내 소원" 탭이 있고, 층·이름·시간이 함께 보여요.</li></ul>
+<li><b>K</b>: 소원 기록을 채팅처럼 보기. <b>정상에 도착해야 열려요.</b> "모두의 소원 / 내 소원" 탭이 있고, 층·이름·시간이 함께 보여요.</li></ul>
 <h3>공유</h3><ul><li>소원은 온라인 저장소에 저장돼, 링크로 들어온 모든 사람이 같은 기록을 실시간으로 봐요. 로그인은 필요 없어요.</li><li>내 소원은 소원을 쓴 그 기기에서만 지울 수 있어요. 브라우저 기록을 지우면 다른 사람처럼 취급돼요.</li><li>도배를 막기 위해 소원은 10초에 하나, 하루 30개까지 올릴 수 있어요. 욕설은 올라가지 않아요.</li><li>부적절한 소원은 관리자가 지울 수 있어요.</li></ul>`,
 etc:`<h3>지도 (N)</h3><ul><li>오른쪽 위 미니맵: 등고선, 산길, 연못, 이정표, 신목(✦), 정상(▲), 주변 동물, 바이크, 내가 지나온 길.</li><li>N이나 미니맵을 누르면 전체 지도와 진행률이 열려요.</li></ul>
 <h3>도감 (C)</h3><ul><li>"동물"과 "자연 현상" 탭. 만난 횟수와 교감 횟수가 기록되고, 못 만난 것은 힌트가 보여요.</li><li>도감과 최고 기록은 이 브라우저에 저장돼요.</li></ul>
-<h3>그 밖에</h3><table><tr><td>K</td><td>소원 돌탑 기록</td></tr><tr><td>L</td><td>이 설명서</td></tr><tr><td>H</td><td>사진 모드 (화면 정보 숨기기)</td></tr>
+<h3>그 밖에</h3><table><tr><td>K</td><td>소원 돌탑 기록 (정상 도착 후)</td></tr><tr><td>L</td><td>이 설명서</td></tr><tr><td>H</td><td>사진 모드 (화면 정보 숨기기)</td></tr>
 <tr><td>G</td><td>그래픽 높음/낮음 (버벅이면 낮음으로)</td></tr><tr><td>M</td><td>소리 켜기/끄기</td></tr><tr><td>Esc</td><td>열린 창 닫기, 돌 올리기 취소</td></tr></table>
 <h3>숨은 장소</h3><ul><li>연못 3곳 (물소리·물방울 소리), 금줄을 두른 신목, 길가의 오래된 거목들, 정상의 돌탑.</li></ul>`,
 mobile:`<h3>터치 조작</h3><table><tr><td>화면 왼쪽 드래그</td><td>이동 (가상 조이스틱)</td></tr><tr><td>화면 오른쪽 드래그</td><td>둘러보기</td></tr>
@@ -1119,10 +1120,11 @@ async function initWishes(){if(!SUPABASE_URL||!SUPABASE_KEY){renderBoard();retur
   clearTimeout(timer);if(error){$('wishstatus').textContent='소원 기록을 불러올 수 없어요: '+(error.message||'');return}
   W.rows=data||[];W.loaded=true;renderBoard();
   W.sb.channel('wishes-live').on('postgres_changes',{event:'*',schema:'public',table:'wishes'},pl=>{
-    if(pl.eventType==='INSERT'){const r=pl.new;if(W.rows.some(x=>x.id===r.id))return;W.rows.push(r);if(r.user_id!==W.me){toast(`${r.name||'누군가'}님이 ${r.layer}층에 소원을 올렸어요`,`“${String(r.text).slice(0,60)}”`,'K를 눌러 모두의 소원 보기','#e8dcc0');AU.chime(1)}}
+    if(pl.eventType==='INSERT'){const r=pl.new;if(W.rows.some(x=>x.id===r.id))return;W.rows.push(r);if(r.user_id!==W.me){if(player.summit)toast(`${r.name||'누군가'}님이 ${r.layer}층에 소원을 올렸어요`,`“${String(r.text).slice(0,60)}”`,'K를 눌러 모두의 소원 보기','#e8dcc0');else toast('소원 돌탑','누군가 소원을 올렸어요','정상에 오르면 확인할 수 있어요','#e8dcc0');AU.chime(1)}}
     else if(pl.eventType==='DELETE'){const id=pl.old&&pl.old.id;W.rows=W.rows.filter(x=>x.id!==id)}
     renderBoard()}).subscribe()}
 function fmtTime(t){if(!t)return'';const d=new Date(t),n=new Date();const hm=`${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;return d.toDateString()===n.toDateString()?`오늘 ${hm}`:`${d.getMonth()+1}월 ${d.getDate()}일 ${hm}`}
+function unlockWishes(){$('wishbtn').innerHTML='소원<kbd>K</kbd>';setTimeout(()=>toast('소원 돌탑','소원 기록이 열렸어요',`K를 누르면 모두의 소원 ${allWishes().length}개를 볼 수 있어요`,'#ffd66b'),2600)}
 function renderBoard(scroll){const box=$('wishlist');if(!box)return;const all=allWishes();const list=all.filter(w=>W.filter==='all'||w.uid===W.me||w.uid==='local');
   const people=new Set(all.map(w=>w.uid)).size;$('boardsum').textContent=`소원 ${all.length}개${W.shared?` · ${people}명`:''}`;
   $('wishstatus').textContent=W.shared?(W.readOnly?'소원을 읽을 수만 있어요. '+(W.roMsg||''):'링크로 들어온 모두와 실시간으로 공유돼요. 내 소원은 이 기기에서 지울 수 있어요.'):'지금은 이 기기에만 저장돼요. (공유 저장소가 설정되지 않음)';
@@ -1310,7 +1312,7 @@ function updatePlayer(dt){
   if(carrying){hiker.arms.forEach((a,i)=>{a.rotation.set(-1.2,0,i?-.25:.25)})}
   hiker.g.position.set(nx,player.pos.y+(player.onGround?Math.abs(Math.cos(player.phase))*.04*Math.min(1,sp/4):0),nz);hiker.g.rotation.y+=angDiff(player.face,hiker.g.rotation.y)*Math.min(1,dt*10);
   const lt=player.trail[player.trail.length-1];if(!lt||Math.hypot(lt.x-nx,lt.z-nz)>4){player.trail.push({x:nx,z:nz});if(player.trail.length>1500)player.trail.shift()}
-  if(!player.summit&&Math.hypot(nx,nz)<10){player.summit=true;const s=Math.round((performance.now()-player.startTime)/1000);big('정상',`해발 ${Math.round(TOP*10)}m · ${Math.floor(s/60)}분 ${s%60}초 걸렸어요 · 천천히 둘러보세요 · 주변 돌을 주워 돌탑을 쌓아보세요`,8000);AU.summit()}
+  if(!player.summit&&Math.hypot(nx,nz)<10){player.summit=true;unlockWishes();const s=Math.round((performance.now()-player.startTime)/1000);big('정상',`해발 ${Math.round(TOP*10)}m · ${Math.floor(s/60)}분 ${s%60}초 걸렸어요 · 천천히 둘러보세요 · 주변 돌을 주워 돌탑을 쌓아보세요`,8000);AU.summit()}
 }
 /* ================= bike runtime ================= */
 const BK=buildBike();scene.add(BK.g);
@@ -1375,7 +1377,7 @@ function updateBike(dt){
   $('rpmfill').style.width=clamp(bike.rpm*100,0,100)+'%';$('rpmtxt').textContent=`${Math.round(1500+clamp(bike.rpm,0,1.1)*8500)} rpm`+(limiter?' · 리미터':wheelRpm<.18&&gi>1&&thr>0?' · 기어가 너무 높아요':'');AU.tire(bike.air?0:clamp(sp/20,0,1)*.12);
   player.pos.copy(bike.pos);player.speed=sp;player.calm=clamp(player.calm-dt*.6,0,1);player.face=bike.heading;
   const lt=player.trail[player.trail.length-1];if(!lt||Math.hypot(lt.x-nx,lt.z-nz)>4){player.trail.push({x:nx,z:nz});if(player.trail.length>1500)player.trail.shift()}
-  if(!player.summit&&Math.hypot(nx,nz)<10){player.summit=true;const s=Math.round((performance.now()-player.startTime)/1000);big('정상',`해발 ${Math.round(TOP*10)}m · ${Math.floor(s/60)}분 ${s%60}초 · 바이크로 올라왔어요`,8000);AU.summit()}
+  if(!player.summit&&Math.hypot(nx,nz)<10){player.summit=true;unlockWishes();const s=Math.round((performance.now()-player.startTime)/1000);big('정상',`해발 ${Math.round(TOP*10)}m · ${Math.floor(s/60)}분 ${s%60}초 · 바이크로 올라왔어요`,8000);AU.summit()}
   $('spd').textContent=`${Math.round(sp*3.6)} km/h`}
 
 const camTarget=new THREE.Vector3(),camWant=new THREE.Vector3();let camInit=false;
