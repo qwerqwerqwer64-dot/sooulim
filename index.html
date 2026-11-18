@@ -314,7 +314,7 @@ function distToPath(x,z){let best=1e9;
 function nearestPathIdx(x,z){let bi=0,bd=1e18;for(let i=0;i<PATH.length;i+=2){const d=(PATH[i].x-x)**2+(PATH[i].z-z)**2;if(d<bd){bd=d;bi=i}}return bi}
 const pathAt=t=>PATH[Math.floor(clamp(t,0,1)*(PATH.length-1))];
 
-const PONDS=[];for(const p of[{t:.1,off:17,R:10,depth:1.7,name:'첫 연못'},{t:.47,off:-15,R:8,depth:1.3,name:'신목 연못'},{t:.8,off:12,R:4.5,depth:.8,name:'작은 샘'},{t:.29,off:34,R:19,depth:3,name:'중턱 호수'},{t:.66,off:-30,R:14,depth:2.6,name:'산정호수'}]){
+const PONDS=[];for(const p of[{t:.1,off:17,R:10,depth:1.7,name:'첫 연못'},{t:.47,off:-15,R:8,depth:1.3,name:'신목 연못'},{t:.8,off:12,R:4.5,depth:.8,name:'작은 샘'},{t:.29,off:34,R:19,depth:3,name:'중턱 호수'},{t:.66,off:-30,R:14,depth:2.6,name:'산정호수'},{t:.04,off:-22,R:8,depth:1.4,name:'들머리 늪'},{t:.2,off:-30,R:13,depth:2.4,name:'갈대 호수'},{t:.38,off:26,R:9,depth:1.6,name:'반딧불 연못'},{t:.55,off:28,R:16,depth:2.8,name:'안개 호수'},{t:.74,off:20,R:7,depth:1.2,name:'이끼 샘'},{t:.88,off:-16,R:6,depth:1,name:'구름 웅덩이'}]){
   const a=pathAt(p.t),r=Math.hypot(a.x,a.z),sg=Math.sign(p.off);let off=p.off,x,z;
   for(let k=0;k<40;k++){x=a.x+a.x/r*off;z=a.z+a.z/r*off;if(distToPath(x,z)>p.R+6&&PONDS.every(q=>Math.hypot(q.x-x,q.z-z)>q.R+p.R+18))break;off+=sg*2}
   PONDS.push({...p,x,z,level:baseHeight(x,z)})}
@@ -943,7 +943,7 @@ canvas.addEventListener('wheel',e=>{camDist=clamp(camDist+e.deltaY*.005,2.5,14)}
 let lastLook=-9;function look(dx,dy){lastLook=T;const s=isTouch?.006:.0035;yaw-=dx*s;pitch=clamp(pitch-dy*s,-1.25,viewFP?1.2:.45)}
 $('tbR').addEventListener('click',()=>{if(bike.riding){gearUp();return}runToggle=!runToggle;$('tbR').classList.toggle('on',runToggle)});$('tbGD').addEventListener('click',()=>gearDown());
 function setTouchBike(on){$('tbR').textContent=on?'기어▲':'달리기';$('tbR').classList.toggle('on',!on&&runToggle);$('tbGD').classList.toggle('hidden',!on)}
-$('tbJ').addEventListener('click',()=>{player.jumpReq=true});$('tbEmo').addEventListener('click',()=>$('emopanel').classList.toggle('hidden'));$('tbF').addEventListener('click',()=>{if(bike.riding||nearBike())toggleBike();else summonBike()});$('tbE').addEventListener('click',()=>interact());$('prompt').addEventListener('click',()=>{if(nearestInteractable())interact();else if(nearBike())toggleBike()});
+$('tbJ').addEventListener('click',()=>{player.jumpReq=true});$('tbEmo').addEventListener('click',()=>$('emopanel').classList.toggle('hidden'));$('tbF').addEventListener('click',()=>{if(bike.riding||nearBike())toggleBike();else summonBike()});$('tbE').addEventListener('click',()=>interact());$('prompt').addEventListener('click',()=>{if(FS.state==='idle'&&nearWater()&&!nearestInteractable()&&!nearestLoose()){fishKey();return}if(nearestInteractable())interact();else if(nearBike())toggleBike()});
 
 /* ================= HUD ================= */
 let dex={},dexP={},bond={};try{dex=JSON.parse(localStorage.getItem('sooulim_dex')||'{}')||{};dexP=JSON.parse(localStorage.getItem('sooulim_phen')||'{}')||{};bond=JSON.parse(localStorage.getItem('sooulim_bond')||'{}')||{}}catch(e){}
@@ -1474,7 +1474,7 @@ const lineGeo=new THREE.BufferGeometry();lineGeo.setAttribute('position',new THR
 const bobber=new THREE.Group();part(GS,M(0xe8402a),0,.03,0,.07,.07,.07,bobber);part(GS,M(0xf4f1ea),0,-.03,0,.065,.05,.065,bobber);part(GC,M(0xf4f1ea),0,.12,0,.008,.12,.008,bobber);bobber.visible=false;scene.add(bobber);
 const ripples=[];function ripple(x,y,z,big){const m=new THREE.Mesh(new THREE.RingGeometry(.15,.22,24),new THREE.MeshBasicMaterial({color:0xe8f4ff,transparent:true,opacity:.7,side:THREE.DoubleSide,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(x,y+.02,z);m.userData={t:0,big:big?2.2:1};scene.add(m);ripples.push(m)}
 function updateRipples(dt){for(const r of ripples.slice()){r.userData.t+=dt;const k=r.userData.t;r.scale.setScalar(1+k*4*r.userData.big);r.material.opacity=.7*(1-k/1.4);if(k>1.4){scene.remove(r);r.geometry.dispose();r.material.dispose();ripples.splice(ripples.indexOf(r),1)}}}
-function nearWater(){if(GL.on||bike.riding||carrying||placing)return null;const pd=pondDist(player.pos.x,player.pos.z);return pd.d<3.2&&pd.d>-1.2?pd.p:null}
+function nearWater(){if(GL.on||bike.riding||carrying||placing)return null;const pd=pondDist(player.pos.x,player.pos.z);return pd.d<4.5&&pd.d>-3?pd.p:null}
 function frozen(){return seasonU.uSeason.value.w>.6}
 function pickFish(p){const cold=p.level>TOP*.5,big=p.R>=12,w=frozen();let pool=FISH.filter(f=>w?(f.winter||f.id==='sancheoneo'||f.id==='goldcarp'):!f.winter);
   const wt={};for(const f of pool){let x=FRW[f.rar];if(w&&f.winter)x=70;if(f.id==='ingeo'||f.id==='megi')x*=big?1.6:.3;if(f.id==='yeolmogeo'||f.id==='sancheoneo')x*=cold?2.2:.15;if(f.id==='megi'&&todIdx>=2)x*=2;if(f.id==='kkeokji'&&p.R<10)x*=1.5;
@@ -1487,8 +1487,8 @@ function startFishing(){const p=nearWater();if(!p)return false;FS.pond=p;const d
   AU.cast();NET.sendT=0;return true}
 function stopFishing(msg){FS.state='idle';bobber.visible=false;fishLine.visible=false;takeRod(hiker);$('fishui').classList.add('hidden');if(msg)toast('낚시',msg[0],msg[1]||'','#9fd0ff');NET.sendT=0}
 function fishKey(){if(FS.state==='idle'){if(!startFishing())toast('낚시','물가에서 낚시할 수 있어요','호수나 연못 가장자리로 가서 R을 눌러요','#9fd0ff');return}
-  if(FS.state==='wait'){stopFishing(['너무 빨랐어요','찌가 쑥 들어갈 때 R을 눌러요']);return}
-  if(FS.state==='bite'){FS.state='fight';FS.ten=.25;FS.prog=.15;FS.surgeT=1;$('fbars').classList.remove('hidden');$('flab').textContent='걸렸다! R을 누르고 있으면 감아요 · 빨개지면 손을 떼요';AU.splash(.8);return}}
+  if(FS.state==='wait'){if(!FS.earlyT||T-FS.earlyT>2){FS.earlyT=T;$('flab').textContent='아직이에요… 찌가 쑥 들어가고 "지금!"이 뜨면 눌러요'}return}
+  if(FS.state==='bite'){FS.state='fight';FS.ten=.2;FS.prog=.15;FS.surgeT=1.5;FS.surge=0;FS.over=0;FS.holdIdle=0;$('fbars').classList.remove('hidden');$('flab').textContent='걸렸다! R을 누르고 있으면 감아요 · 빨개지면 손을 떼요';AU.splash(.8);return}}
 function updateFishing(dt){updateRipples(dt);if(FS.brag>0){FS.brag-=dt;if(FS.brag<=0||player.speed>.5)endBrag(hiker)}
   if(FS.state==='idle')return;FS.t+=dt;
   if(player.speed>.8||!player.onGround||GL.on||bike.riding){stopFishing(['낚싯대를 거뒀어요']);return}
@@ -1496,16 +1496,17 @@ function updateFishing(dt){updateRipples(dt);if(FS.brag>0){FS.brag-=dt;if(FS.bra
   if(FS.state==='cast'){const k=Math.min(1,FS.t/.6);bobber.visible=true;const st=tip.clone();bobber.position.lerpVectors(st,FS.bob,k);bobber.position.y+=Math.sin(k*Math.PI)*1.5;
     if(k>=1){FS.state='wait';FS.t=0;ripple(FS.bob.x,FS.bob.y,FS.bob.z);AU.plop();FS.biteAt=RR(4,12)*([.65,1,.65,.85][todIdx])*(1-player.calm*.35)*(frozen()?1.2:1);$('flab').textContent='찌를 지켜보세요… (움직이면 거둬요)'}}
   else if(FS.state==='wait'){bobber.position.set(FS.bob.x,FS.bob.y+Math.sin(T*2.2)*.015,FS.bob.z);if(FS.t>FS.biteAt-1.2&&Math.random()<dt*3){bobber.position.y-=.03;ripple(FS.bob.x,FS.bob.y,FS.bob.z)}
-    if(FS.t>=FS.biteAt){FS.state='bite';FS.t=0;FS.fish=pickFish(FS.pond);FS.win=.9+Math.random()*.5;AU.splash(.5);ripple(FS.bob.x,FS.bob.y,FS.bob.z,true);$('flab').textContent='입질이다! 지금 R!'}}
+    if(FS.t>=FS.biteAt){FS.state='bite';FS.t=0;FS.fish=pickFish(FS.pond);FS.win=1.3+Math.random()*.6;AU.splash(.5);ripple(FS.bob.x,FS.bob.y,FS.bob.z,true);$('flab').textContent='입질이다! 지금 R!'}}
   else if(FS.state==='bite'){bobber.position.set(FS.bob.x,FS.bob.y-.18-Math.sin(FS.t*25)*.05,FS.bob.z);if(FS.t>FS.win){stopFishing(['놓쳤어요…','찌가 들어가면 바로 R을 눌러요'])}}
-  else if(FS.state==='fight'){const f=FS.fish,pw=f.f.pow*(.7+.6*(f.len-f.f.min)/(f.f.max-f.f.min));const hold=keys.KeyR||keys.Space||FS.touchHold;
-    FS.surgeT-=dt;if(FS.surgeT<=0){FS.surgeT=RR(.9,2.6);FS.surge=RR(.5,1)*pw;AU.splash(.3);ripple(FS.bob.x,FS.bob.y,FS.bob.z)}FS.surge=Math.max(0,FS.surge-dt*1.2);
-    if(hold){FS.ten+=dt*(.22+FS.surge*1.1)*pw;FS.prog+=dt*.2/pw*(1-FS.surge*.6);if(Math.random()<dt*12)AU.tick()}else{FS.ten-=dt*.55;FS.prog-=dt*(.03+FS.surge*.12);FS.holdIdle+=dt}
+  else if(FS.state==='fight'){const f=FS.fish,pw=f.f.pow*(.7+.6*(f.len-f.f.min)/(f.f.max-f.f.min)),sq=Math.sqrt(pw);const hold=keys.KeyR||keys.Space||FS.touchHold;
+    FS.surgeT-=dt;if(FS.surgeT<=0){FS.surgeT=RR(1.4,3.2)/sq;FS.surge=RR(.6,1);AU.splash(.3);ripple(FS.bob.x,FS.bob.y,FS.bob.z)}FS.surge=Math.max(0,FS.surge-dt*.9);
+    if(hold){FS.ten+=dt*(.16+FS.surge*.9)*sq;FS.prog+=dt*.24/sq*(1-FS.surge*.7);if(Math.random()<dt*12)AU.tick()}else{FS.ten-=dt*.6;FS.prog-=dt*(.02+FS.surge*.1*pw);FS.holdIdle+=dt}
     if(hold)FS.holdIdle=0;FS.ten=clamp(FS.ten,0,1.05);
     const k=clamp(FS.prog,0,1);bobber.position.set(lerp(FS.bob.x,player.pos.x,k*.8)+Math.sin(T*9)*.15*FS.surge,FS.bob.y-.1,lerp(FS.bob.z,player.pos.z,k*.8)+Math.cos(T*7)*.15*FS.surge);
     $('ften').style.width=clamp(FS.ten*100,0,100)+'%';$('fprog').style.width=clamp(FS.prog*100,0,100)+'%';hiker.arms[1].rotation.x=-1.0-Math.sin(T*14)*.08*(hold?1:0);
-    if(FS.ten>=1){AU.snap();stopFishing(['툭… 줄이 끊어졌어요',`${f.f.rar==='common'?'':'큰 녀석이었는데! '}빨개지기 전에 손을 떼세요`]);return}
-    if(FS.prog<=0||FS.holdIdle>7){stopFishing(['물고기가 도망갔어요','R을 누르고 있어야 감겨요']);return}
+    FS.over=FS.ten>=1?FS.over+dt:0;const lab=FS.surge>.45?'물고기가 세게 당겨요! 손을 떼요':FS.ten>.8?'줄이 팽팽해요 — 손을 떼요':hold?'감는 중… 빨개지면 손을 떼요':'R(또는 Space)을 누르고 있으면 감아요';if($('flab').textContent!==lab)$('flab').textContent=lab;$('ften').style.background=FS.ten>.8||FS.surge>.45?'#ff5a4a':FS.ten>.55?'#ffc24a':'#7fd48a';
+    if(FS.over>.4){AU.snap();stopFishing(['툭… 줄이 끊어졌어요',`${f.f.rar==='common'?'':'큰 녀석이었는데! '}빨개지기 전에 손을 떼세요`]);return}
+    if(FS.prog<=0||FS.holdIdle>8){stopFishing(['물고기가 도망갔어요','R을 누르고 있어야 감겨요']);return}
     if(FS.prog>=1){const c=FS.fish;stopFishing(null);caught(c);return}}
   if(hiker.rod&&FS.state!=='idle'){fishLine.visible=true;const P=lineGeo.attributes.position;P.setXYZ(0,tip.x,tip.y,tip.z);P.setXYZ(1,bobber.position.x,bobber.position.y+.1,bobber.position.z);P.needsUpdate=true}}
 function caught(c){const f=c.f,r=RAR[f.rar];const L=fishLog[f.id];const rec=!L||c.len>L.len;fishLog[f.id]={n:(L?L.n:0)+1,len:Math.max(L?L.len:0,c.len),w:Math.max(L?L.w:0,c.w)};try{localStorage.setItem('sooulim_fish',JSON.stringify(fishLog))}catch(e){}renderDex();
@@ -1521,7 +1522,7 @@ $('fcbrag').addEventListener('click',()=>{const c=FS.catchFish;$('fishcard').cla
   if(NET.ready&&NET.ch)NET.ch.send({type:'broadcast',event:'catch',payload:{i:NET.id,f:c.f.id,l:+c.len.toFixed(1),w:Math.round(c.w)}});
   toast('자랑하기',`${c.f.name}를(을) 번쩍 들었어요`,NET.peers.size?'함께 있는 사람들에게도 보여요':'움직이면 내려놓아요','#ffd27a');if(c.f.protect)setTimeout(()=>{ripple(FS.pond.x,FS.pond.level-.2,FS.pond.z,true)},8000)});
 $('fcrel').addEventListener('click',()=>{const c=FS.catchFish;$('fishcard').classList.add('hidden');if(c&&FS.pond){ripple(FS.bob.x,FS.bob.y,FS.bob.z,true);AU.splash(.6)}toast('놓아주기','물고기가 헤엄쳐 갔어요','고마워, 잘 가!','#9fd0ff')});
-const tbFish=document.getElementById('tbFish');tbFish.addEventListener('touchstart',e=>{e.preventDefault();if(FS.state==='fight')FS.touchHold=true;else fishKey()},{passive:false});tbFish.addEventListener('touchend',()=>{FS.touchHold=false});tbFish.addEventListener('click',()=>{if(FS.state!=='fight')fishKey()});
+const tbFish=document.getElementById('tbFish');tbFish.addEventListener('touchstart',e=>{e.preventDefault();if(FS.state==='fight')FS.touchHold=true;else{fishKey();if(FS.state==='fight')FS.touchHold=true}},{passive:false});tbFish.addEventListener('touchend',()=>{FS.touchHold=false});tbFish.addEventListener('click',()=>{if(FS.state!=='fight')fishKey()});
 
 /* ================= snow tracks (winter) ================= */
 const TR={on:false,f:null,b:null,fi:0,bi:0,fd:null,bd:null,ageT:0,lastBike:null,peerStep:new Map()};
@@ -1747,9 +1748,9 @@ function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta()
       $('calmfill').style.width=(player.calm*100)+'%';$('calmlabel').textContent=player.calm>.95?'고요함 — 숲이 당신을 받아들였어요':player.calm>.5?'고요함 — 숲이 조용해지고 있어요':'고요함 — 멈춰서 귀 기울이면 차올라요'}
     const na=nearestInteractable();let txt='';if(na){const nm=na.sp.name.split(' (')[0];txt=na.sp.id==='bear'?`<b>E</b> 반달가슴곰 — 거리를 두세요`:na.sp.kind==='spirit'?(na.state==='bless'&&!na.bowed?`<b>E</b> 백록에게 인사하기`:''):`<b>E</b> ${josa(nm,'와','과')} 교감하기`}
     if(placing)txt=`<b>E</b>/<b>Space</b> 돌 올려놓기 · <b>Esc</b> 취소`;else if(carrying)txt=nearCairn()?`<b>E</b> 돌탑에 올리기`:`돌탑 자리(납작한 받침돌)로 가져가세요 · <b>E</b> 내려놓기`;else if(!bike.riding&&nearestLoose())txt=`<b>E</b> 돌 줍기`;else if(nearCairn())txt=`<b>K</b> 소원 돌탑 기록 보기`;
-    if(FS.state==='idle'&&!txt&&nearWater()&&!nearGlider())txt=`<b>R</b> ${frozen()?'얼음낚시하기':'낚시하기'}`;
+    if(FS.state==='idle'&&!placing&&!carrying&&nearWater()&&!nearGlider()){const fw=`<b>R</b> ${frozen()?'얼음낚시하기':'낚시하기'}`;txt=txt?txt+' · '+fw:fw}
     if(GL.on)txt=`<b>W</b> 빠르게 · <b>S</b> 느리게 · <b>A/D</b> 선회 · 매가 맴도는 곳을 찾아보세요`;else if(nearGlider()&&!txt)txt=`<b>E</b> 행글라이더로 날기`;
-    if(!txt&&nearBike())txt=`<b>F</b> 엔듀로 바이크 타기`;if(bike.riding&&Math.abs(bike.speed)<1)txt=`<b>F</b> 바이크에서 내리기`;
+    if(nearBike()&&!bike.riding)txt=txt?txt+` · <b>F</b> 바이크`:`<b>F</b> 엔듀로 바이크 타기`;if(bike.riding&&Math.abs(bike.speed)<1)txt=`<b>F</b> 바이크에서 내리기`;
     if(isTouch)$('tbFish').classList.toggle('hidden',!(nearWater()||FS.state!=='idle'));
     if(txt!==promptTxt){promptTxt=txt;$('prompt').innerHTML=txt;$('prompt').classList.toggle('hidden',!txt)}
     if(!mapEl.classList.contains('hidden')&&Math.floor(T*4)%2===0)drawBigMap()}
