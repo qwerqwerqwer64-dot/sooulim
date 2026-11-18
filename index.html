@@ -258,6 +258,11 @@ kbd{font-family:inherit;font-size:10.5px;opacity:.65;margin-left:4px;border:1px 
 <script type="module">
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 /* ================= 설정: Supabase 연결 정보 =================
    Supabase 대시보드 → Project Settings → API (또는 Data API / API Keys) 에서 복사해 넣으세요.
@@ -338,6 +343,30 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
 renderer.setSize(innerWidth,innerHeight);
 renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+/* ---- post: bloom + colour grade (그래픽 높음에서만) ---- */
+const LK={s:1.2,h:.8,e:1.04};window.__LK=LK;let composer=null,bloomPass=null,gradePass=null,postOK=true;
+const GRADE=[ // 아침 안개, 한낮, 해질녘, 밤
+ {sh:[.93,1.0,1.05],hl:[1.07,1.03,.93],sat:1.12,con:1.07,glow:[1.0,.86,.62],gi:.55,bl:.32},
+ {sh:[.95,.99,1.05],hl:[1.05,1.03,.96],sat:1.16,con:1.09,glow:[1.0,.95,.82],gi:.38,bl:.22},
+ {sh:[.9,.93,1.1],hl:[1.12,1.0,.86],sat:1.2,con:1.1,glow:[1.0,.62,.32],gi:.85,bl:.42},
+ {sh:[.9,.97,1.12],hl:[.96,1.0,1.08],sat:.95,con:1.0,lift:[.02,.03,.055],glow:[.6,.72,1.0],gi:.22,bl:.55}];
+const gcur={sh:new THREE.Vector3(1,1,1),hl:new THREE.Vector3(1,1,1),sat:1.1,con:1.06,glow:new THREE.Vector3(1,.9,.7),gi:.5,bl:.3};
+function initPost(){try{const rt=new THREE.WebGLRenderTarget(innerWidth*renderer.getPixelRatio(),innerHeight*renderer.getPixelRatio(),{type:THREE.HalfFloatType,samples:renderer.capabilities.isWebGL2?(matchMedia('(pointer:coarse)').matches?2:4):0});
+  composer=new EffectComposer(renderer,rt);composer.renderToScreen=true;
+  bloomPass=new UnrealBloomPass(new THREE.Vector2(innerWidth/2,innerHeight/2),.3,.55,.82);
+  gradePass=new ShaderPass({uniforms:{tDiffuse:{value:null},uSh:{value:gcur.sh},uHl:{value:gcur.hl},uSat:{value:1.1},uCon:{value:1.06},uSun:{value:new THREE.Vector2(.5,.5)},uSunVis:{value:0},uGlow:{value:gcur.glow},uAsp:{value:innerWidth/innerHeight},uVig:{value:.32},uLift:{value:new THREE.Vector3(.008,.01,.014)}},
+    vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+    fragmentShader:`uniform sampler2D tDiffuse;uniform vec3 uSh,uHl,uGlow,uLift;uniform float uSat,uCon,uSunVis,uAsp,uVig;uniform vec2 uSun;varying vec2 vUv;
+    void main(){vec3 c=texture2D(tDiffuse,vUv).rgb;float l=dot(c,vec3(.2126,.7152,.0722));
+      c*=mix(uSh,uHl,smoothstep(.12,.75,l));                       // 그림자는 푸르게, 빛은 따뜻하게
+      c=mix(vec3(l),c,uSat);                                        // 채도
+      c=clamp((c-.42)*uCon+.42,0.,1.);c=c*c*(3.-2.*c)*.12+c*.88;c+=uLift*(1.-c);      // 부드러운 대비 곡선
+      vec2 d=(vUv-uSun)*vec2(uAsp,1.);float r=length(d);
+      c+=uGlow*uSunVis*(exp(-r*2.6)*.22+exp(-r*9.)*.25)*(1.-l*.5); // 해/달 쪽 빛 번짐
+      vec2 q=vUv-.5;c*=1.-uVig*dot(q,q)*1.6;                        // 비네트
+      gl_FragColor=vec4(c,1.);}`});
+  composer.addPass(new RenderPass(scene,null));composer.addPass(bloomPass);composer.addPass(new OutputPass());composer.addPass(gradePass);
+}catch(e){console.warn('post off',e);composer=null;postOK=false}}
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.12,7000);
 scene.fog=new THREE.FogExp2(0xcfdcd6,.01);
@@ -975,7 +1004,7 @@ function act(a){
   if(a==='mute'){AU.setMute(!AU.muted);$('mutebtn').innerHTML=(AU.muted?'소리 끔':'소리 켬')+'<kbd>M</kbd>'}
   if(a==='photo'){photo=!photo;for(const id of['info','btns','hint','toast','minimapwrap','prompt'])$(id).style.opacity=photo?0:'';$('btns').style.pointerEvents=photo?'none':'auto';$('cross').classList.toggle('hidden',!viewFP||photo);if(photo)setTimeout(()=>{if(photo)$('btns').style.opacity=.15},1200)}
   if(a==='gfx'){gfxHigh=!gfxHigh;renderer.setPixelRatio(gfxHigh?Math.min(devicePixelRatio,1.5):.7);renderer.shadowMap.enabled=gfxHigh;sun.castShadow=gfxHigh;scene.traverse(o=>{if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true)}});
-    renderer.setSize(innerWidth,innerHeight);for(const m of[motesMat,flyMat,petalMat,dustMat])if(m)m.uniforms.uPR.value=renderer.getPixelRatio();$('gfxbtn').innerHTML=(gfxHigh?'그래픽 높음':'그래픽 낮음')+'<kbd>G</kbd>'}}
+    renderer.setSize(innerWidth,innerHeight);if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(innerWidth,innerHeight)}for(const m of[motesMat,flyMat,petalMat,dustMat])if(m)m.uniforms.uPR.value=renderer.getPixelRatio();$('gfxbtn').innerHTML=(gfxHigh?'그래픽 높음':'그래픽 낮음')+'<kbd>G</kbd>'}}
 document.querySelectorAll('#btns button').forEach(b=>b.addEventListener('click',()=>act(b.dataset.a)));
 $('dexclose').addEventListener('click',()=>act('dex'));dexEl.addEventListener('click',e=>{if(e.target===dexEl)act('dex')});
 $('mapclose').addEventListener('click',()=>act('map'));mapEl.addEventListener('click',e=>{if(e.target===mapEl)act('map')});$('minimapwrap').addEventListener('click',()=>act('map'));
@@ -1721,8 +1750,8 @@ function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta()
   windU.uTime.value=T;windU.uWind.value=lerp(windU.uWind.value,(.2+gust*.9+alt01*.3+phen.rain*.2)*(spirit?.35:1),dt*2);
   const el=cur.el*Math.PI/180,az=cur.az*Math.PI/180;sunDir.set(Math.cos(el)*Math.sin(az),Math.sin(el),Math.cos(el)*Math.cos(az));
   const rbe=Math.min(el,.21);skyU.rbDir.value.set(-Math.cos(rbe)*Math.sin(az),-Math.sin(rbe),-Math.cos(rbe)*Math.cos(az));skyU.rb.value=phen.rb;skyU.rb2.value=phen.dbl?phen.rb:0;
-  sun.position.copy(player.pos).addScaledVector(sunDir,160);sun.target.position.copy(player.pos);sun.color.copy(cur.sun);sun.intensity=cur.si*(1-phen.rain*.25);
-  hemi.color.copy(cur.hs);hemi.groundColor.copy(cur.hg);hemi.intensity=cur.hi;renderer.toneMappingExposure=cur.exp;
+  sun.position.copy(player.pos).addScaledVector(sunDir,160);sun.target.position.copy(player.pos);sun.color.copy(cur.sun);sun.intensity=cur.si*(gfxHigh&&postOK?lerp(LK.s,1.1,cur.night):1)*(1-phen.rain*.25);
+  hemi.color.copy(cur.hs);hemi.groundColor.copy(cur.hg);hemi.intensity=cur.hi*(gfxHigh&&postOK?lerp(LK.h,1.15,cur.night):1);renderer.toneMappingExposure=cur.exp*(gfxHigh&&postOK?LK.e:1);
   scene.fog.color.copy(cur.fog);scene.fog.density=.0095*cur.fm*(1-.74*alt01)*(spirit?1.25:1)*(1+phen.rain*.35);
   skyU.top.value.copy(cur.top);skyU.hor.value.copy(cur.fog).lerp(cur.hor,.5);skyU.sunDir.value.copy(sunDir);skyU.sunCol.value.copy(cur.sun);sky.position.copy(camera.position);
   if(skyU.hor.value){}
@@ -1754,9 +1783,16 @@ function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta()
     if(isTouch)$('tbFish').classList.toggle('hidden',!(nearWater()||FS.state!=='idle'));
     if(txt!==promptTxt){promptTxt=txt;$('prompt').innerHTML=txt;$('prompt').classList.toggle('hidden',!txt)}
     if(!mapEl.classList.contains('hidden')&&Math.floor(T*4)%2===0)drawBigMap()}
-  renderer.render(scene,camera)}
+  if(!composer&&postOK&&gfxHigh)initPost();
+  if(composer&&gfxHigh&&postOK){composer.passes[0].camera=camera;const G=GRADE[todIdx],k=1-Math.exp(-dt*.9);gcur.sh.lerp(tv3.set(...G.sh),k);gcur.hl.lerp(tv3.set(...G.hl),k);gcur.glow.lerp(tv3.set(...G.glow),k);
+    for(const q of['sat','con','gi','bl'])gcur[q]=lerp(gcur[q],G[q],k);const gu=gradePass.uniforms;gu.uSat.value=gcur.sat*(1-phen.rain*.2);gu.uCon.value=gcur.con;gu.uLift.value.lerp(tv3.set(...(G.lift||[.008,.01,.014])),k);
+    tv3.copy(camera.position).addScaledVector(sunDir,1000).project(camera);const fw=camera.getWorldDirection(tv3b).dot(sunDir);gu.uSun.value.set(tv3.x*.5+.5,tv3.y*.5+.5);
+    gu.uSunVis.value=gcur.gi*smooth(.1,.6,fw)*(1-phen.rain*.8)*(1-cur.cloud*.35)*(.6+.4*alt01);bloomPass.strength=gcur.bl;
+    try{composer.render(dt)}catch(e){console.warn(e);postOK=false;renderer.render(scene,camera)}}
+  else renderer.render(scene,camera)}
+const tv3=new THREE.Vector3(),tv3b=new THREE.Vector3();
 
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);sizeMini();if(!mapEl.classList.contains('hidden'))drawBigMap()});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(innerWidth,innerHeight);gradePass.uniforms.uAsp.value=innerWidth/innerHeight}sizeMini();if(!mapEl.classList.contains('hidden'))drawBigMap()});
 
 /* ================= boot ================= */
 (async()=>{
@@ -1771,7 +1807,7 @@ addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updat
     $('start').classList.add('hidden');$('hud').classList.remove('hidden');started=true;player.startTime=performance.now();clock.getDelta();sizeMini();
     if(isTouch){$('touchbtns').classList.remove('hidden');$('hint').textContent='왼쪽 드래그 이동 · 오른쪽 드래그 둘러보기'}
     setTimeout(()=>{$('hint').style.opacity=0},16000);setTimeout(()=>toast('도움말','L 키로 설명서를 열 수 있어요','조작법과 지금까지의 모든 상호작용이 정리돼 있어요','#e8dcc0'),2500)});
-  window.__dbg_unused={FS,FISH,PONDS,fishKey,caught,pickFish,startFishing,TR,footMark,trackMark,getPeer,NET,GL,launchGlider,THERMALS,updateGlide,ridgeLift,thermalLift,player,animals,bike,toggleBike,keys,act,interact,get yaw(){return yaw},set yaw(v){yaw=v},set pitch(v){pitch=v},
+  window.__dbg_unused={setPost:v=>{postOK=v},FS,FISH,PONDS,fishKey,caught,pickFish,startFishing,TR,footMark,trackMark,getPeer,NET,GL,launchGlider,THERMALS,updateGlide,ridgeLift,thermalLift,player,animals,bike,toggleBike,keys,act,interact,get yaw(){return yaw},set yaw(v){yaw=v},set pitch(v){pitch=v},
     force:(id,temper)=>trySpawn(SPECIES.find(s=>s.id===id),temper),rain:()=>startRain(),petals:()=>startPetals(),rainbow:(d)=>{startRainbow();phen.dbl=!!d},phen,setTod:i=>{todIdx=i;todLabel()},setSeason:i=>{seasonIdx=i;todLabel()},snap:()=>{const T2=TODS[todIdx];for(const k of['el','az','si','hi','fm','sh','blink','mo','exp','cloud','night'])cur[k]=T2[k];for(const k of['sun','hs','hg','top','hor','fog','mote'])cur[k].set(T2[k]);const v=SEASONS[seasonIdx].v;seasonU.uSeason.value.set(...v)},tower,looseStones,W,openWish,addWish,stoneInteract,get placing(){return placing},spawnShoot};
 })();
 </script>
