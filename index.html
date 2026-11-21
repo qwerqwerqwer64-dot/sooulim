@@ -245,6 +245,8 @@ kbd{font-family:inherit;font-size:10.5px;opacity:.65;margin-left:4px;border:1px 
     <b>정상에서 E</b><span>행글라이더로 날기 (바람과 열기류를 타요)</span>
     <b>물가에서 R</b><span>낚시 (찌가 들어가면 R, 누르고 있으면 감기)</span>
     <b>X</b><span>손전등 / 바이크 전조등 켜기·끄기 (밤엔 자동으로 켜져요)</span>
+    <b>J</b><span>모닥불 피우기 · 가까이서 한 번 더 누르면 끄기</span>
+    <b>모닥불 옆 E</b><span>불 앞에 앉아 불멍하기</span>
     <b>1 · 2 · 3 · 4</b><span>👋 인사 · 👏 박수 · 🧘 앉아 쉬기 · 🎵 춤</span>
     <b>K · L</b><span>소원 돌탑 기록(정상에서) · 게임 설명서</span>
     <b>T · Y · H</b><span>시간대 · 계절 · 사진 모드</span>
@@ -254,7 +256,7 @@ kbd{font-family:inherit;font-size:10.5px;opacity:.65;margin-left:4px;border:1px 
 
 <div id="joy" class="hidden"><div id="joyk"></div></div>
 <div id="emopanel" class="hidden"><button class="btn" data-emo="wave">👋</button><button class="btn" data-emo="clap">👏</button><button class="btn" data-emo="sit">🧘</button><button class="btn" data-emo="dance">🎵</button></div>
-<div id="touchbtns" class="hidden"><button class="btn" id="tbEmo">표현</button><button class="btn hidden" id="tbGD">기어▼</button><button class="btn" id="tbF">바이크</button><button class="btn" id="tbFish">낚시</button><button class="btn hidden" id="tbLight">불빛</button><button class="btn" id="tbE">교감</button><button class="btn" id="tbJ">점프</button><button class="btn" id="tbR">달리기</button></div>
+<div id="touchbtns" class="hidden"><button class="btn" id="tbEmo">표현</button><button class="btn hidden" id="tbGD">기어▼</button><button class="btn" id="tbF">바이크</button><button class="btn" id="tbFish">낚시</button><button class="btn hidden" id="tbLight">불빛</button><button class="btn" id="tbFire">모닥불</button><button class="btn" id="tbE">교감</button><button class="btn" id="tbJ">점프</button><button class="btn" id="tbR">달리기</button></div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -734,6 +736,11 @@ const SPECIES=[
  {id:'owl',name:'수리부엉이',rar:'rare',zones:['mid','high'],kind:'owl',walk:0,run:9,flee:8,size:.5,pitch:.8,desc:'천연기념물. 귀처럼 솟은 깃털과 주황빛 눈을 가졌어요.',where:'중턱 이상, 해질녘에 자주'},
  {id:'goral',name:'산양',rar:'epic',zones:['mid','high'],kind:'quad',walk:1,run:6,flee:15,size:1,pitch:.9,desc:'천연기념물이자 멸종위기종. 험한 바위 절벽을 거뜬히 오르내려요.',where:'높은 바위 지대'},
  {id:'bear',name:'반달가슴곰',rar:'epic',zones:['low','mid'],kind:'quad',walk:1,run:2.2,flee:16,size:1.4,pitch:.5,desc:'가슴의 흰 반달 무늬가 특징. 복원 사업으로 숲에 돌아왔어요. 만나면 거리를 두세요.',where:'깊은 숲'},
+ {id:'cow',name:'한우 (누렁소)',rar:'common',zones:['low'],kind:'quad',walk:.7,run:3,flee:4,size:1.5,pitch:.45,pack:[1,3],desc:'산자락 목장에서 풀 뜯으러 올라온 누렁소. 느긋하고 순해서 쓰다듬어도 가만히 있어요.',where:'낮은 숲, 낮 시간'},
+ {id:'boar',name:'멧돼지',rar:'uncommon',zones:['low','mid'],kind:'quad',walk:1,run:6.5,flee:12,size:.9,pitch:.6,desc:'코로 땅을 파헤쳐 먹이를 찾아요. 놀라면 돌진할 수 있으니 거리를 두세요.',where:'낮은 숲, 중턱'},
+ {id:'marten',name:'담비 (노란목도리담비)',rar:'rare',zones:['mid','high'],kind:'quad',walk:1.4,run:8,flee:11,size:.45,pitch:1.6,desc:'노란 목도리를 두른 듯한 날쌘 사냥꾼. 두세 마리가 함께 다니기도 해요.',where:'중턱 이상'},
+ {id:'wolf',name:'늑대',rar:'epic',zones:['mid','high'],kind:'quad',walk:1.2,run:8.5,flee:18,size:1,pitch:.9,pack:[1,3],desc:'한국에서는 사라졌지만 이 숲에는 무리 지어 살아요. 밤이면 능선 너머로 울음소리가 들려요.',where:'중턱 이상, 밤에 자주'},
+ {id:'tiger',name:'호랑이 (한국호랑이)',rar:'legendary',zones:['mid','high'],kind:'quad',walk:.9,run:5,flee:22,size:1.8,pitch:.4,desc:'옛이야기 속 산군(山君). 멀리서 조용히 지켜볼 뿐, 먼저 다가오지 않아요. 눈을 마주친 채 천천히 물러나세요.',where:'깊은 산, 해질녘과 밤'},
  {id:'whitedeer',name:'백록 (흰 사슴)',rar:'legendary',zones:['low','mid','high'],kind:'spirit',walk:.6,run:0,flee:11,size:1.2,pitch:1,desc:'한라산 백록담 이름에 얽힌 흰 사슴 전설. 마음이 고요한 사람에게는 고개를 숙인대요.',where:'???'},
 ];
 const PHEN=[
@@ -750,6 +757,7 @@ const PHEN=[
  {id:'milkyway',name:'은하수',rar:'epic',desc:'불빛 없는 높은 산에서만 또렷한 별의 강.',where:'밤, 높은 곳에서 하늘 올려다보기'},
  {id:'frost',name:'상고대',rar:'epic',desc:'추운 겨울 아침, 높은 곳 나뭇가지에 하얀 서리꽃이 피어요.',where:'겨울 아침, 정상 부근'},
  {id:'aurora',name:'오로라',rar:'epic',desc:'한국에서는 거의 볼 수 없지만, 이 숲의 겨울밤에는 북쪽 하늘에 초록빛 커튼이 일렁여요.',where:'겨울 밤, 북쪽 하늘'},
+ {id:'firegaze',name:'불멍',rar:'common',desc:'타닥타닥 타오르는 모닥불을 가만히 바라보면 마음이 고요해져요.',where:'모닥불 앞에 앉아 잠시 바라보기'},
  {id:'doublerainbow',name:'쌍무지개',rar:'legendary',desc:'무지개 바깥에 색 순서가 뒤집힌 무지개가 하나 더 떠요.',where:'무지개가 뜰 때 아주 드물게'},
 ];
 const TEMPER_TXT={shy:['경계심이 많아 보여요','조심스럽게 이쪽을 살펴요'],calm:['느긋하게 이쪽을 바라봐요','신경 쓰지 않고 풀을 뜯어요'],friendly:['호기심 가득한 눈으로 다가와요','먼저 다가와 냄새를 맡고 싶어 해요']};
@@ -794,6 +802,17 @@ function buildAnimal(sp){
     part(GS,M(0xe8e2d2),0,-.04,.16,.06,.05,.04,rig.head);for(const s of[-1,1])part(GK,M(0x1a1714),s*.045,.12,-.02,.022,.14,.022,rig.head,-.6)}
   else if(id==='bear'){rig=quad({mat,len:1.3,h:.75,w:.72,leg:.42,legR:.11,c1:0x1d1b1a,neck:.18,neckR:.25,tilt:1.1,head:[.38,.33,.38],snoutC:0x8a7056,ears:'round',earS:.13,tail:'short',tailS:.08});
     const vm=M(0xf1ece0);part(GB,vm,.1,.85,.55,.05,.035,.3,rig.body,0,.9,0);part(GB,vm,-.1,.85,.55,.05,.035,.3,rig.body,0,-.9,0)}
+  else if(id==='cow'){rig=quad({mat,len:1.7,h:.85,w:.74,leg:.6,legR:.1,c1:0xb98a45,belly:0xc99c58,hoof:0x2b221b,neck:.22,neckR:.26,tilt:1.2,head:[.34,.36,.5],headC:0xb07f3c,snoutC:0xe2c2a8,ears:'deer',earS:.22,tail:'short',tailS:.55});
+    for(const sd of[-1,1])part(GK,M(0xe8dcc0),sd*.13,.17,-.06,.03,.13,.03,rig.head,0,0,-sd*.9);part(GS,M(0x9c6c30),0,.17,-.05,.12,.05,.08,rig.head)}
+  else if(id==='boar'){rig=quad({mat,len:.95,h:.55,w:.45,leg:.24,legR:.05,c1:0x3b3129,belly:0x4b3f34,hoof:0x15110e,neck:.1,neckR:.21,tilt:1.35,head:[.26,.28,.4],snoutC:0x5c4b3e,ears:'pointy',earS:.09,tail:'short',tailS:.12});
+    part(GB,M(0x2a221c),0,.86,-.02,.06,.1,.55,rig.body);for(const sd of[-1,1])part(GK,M(0xefe6d2),sd*.07,-.06,.25,.012,.07,.012,rig.head,-.4,0,sd*.3)}
+  else if(id==='marten')rig=quad({mat,len:.55,h:.17,w:.15,leg:.12,legR:.024,c1:0xd6a13d,legC:0x261d16,belly:0xf3d57c,neck:.12,neckR:.06,tilt:.8,head:[.11,.1,.15],headC:0x2a2119,snoutC:0x2a2119,ears:'round',earS:.05,earC:0x2a2119,tail:'bushy',tailS:.42,tailTip:0x1f1812});
+  else if(id==='wolf')rig=quad({mat,len:.95,h:.42,w:.3,leg:.5,legR:.04,c1:0x7f7b72,legC:0x6c675e,belly:0xcfc8ba,neck:.22,neckR:.11,tilt:.9,head:[.2,.19,.3],snoutC:0xbdb5a6,ears:'pointy',earS:.13,earC:0x5c5850,tail:'bushy',tailS:.5,tailTip:0x35322d});
+  else if(id==='tiger'){const L=1.9,Hh=.72,Wd=.6,leg=.55,by=leg+Hh*.42;
+    rig=quad({mat,len:L,h:Hh,w:Wd,leg,legR:.1,c1:0xd9822b,belly:0xf3ead8,legC:0xd07a28,neck:.2,neckR:.26,tilt:1.1,head:[.46,.42,.44],snoutC:0xf3ead8,ears:'round',earS:.13,earC:0x2a1e16,tail:'short',tailS:1});
+    const st=M(0x1c140f);for(let i=0;i<8;i++){const z=-L*.4+i*L*.105,k=Math.sqrt(Math.max(.05,1-(z/(L/2))**2));part(GS,st,0,by+.02,z,Wd/2*k*1.03,Hh/2*k*1.03,.028,rig.body,0,0,(i%2?.15:-.15))}
+    for(const sd of[-1,1]){part(GS,st,sd*.17,.13,-.02,.03,.08,.04,rig.head,0,0,sd*.5);part(GS,M(0xf3ead8),sd*.13,.06,.18,.08,.06,.04,rig.head)}
+    part(GS,M(0xe8b030,{flatShading:false}),-.12,.06,.21,.03,.03,.01,rig.head);part(GS,M(0xe8b030,{flatShading:false}),.12,.06,.21,.03,.03,.01,rig.head)}
   else if(id==='whitedeer'){const wm=c=>{const m=new THREE.MeshLambertMaterial({color:c,emissive:0x8aa0b8,emissiveIntensity:.45,flatShading:true,transparent:true,opacity:1});(extra.mats=extra.mats||[]).push(m);return m};
     rig=quad({mat:wm,len:1.05,h:.5,w:.4,leg:.78,legR:.035,c1:0xf6f3ea,belly:0xffffff,hoof:0xc9c2b3,neck:.55,neckR:.09,tilt:.42,head:[.18,.19,.32],ears:'deer',earS:.18,tail:'puff',tailS:.1});
     antler(rig.head,1.7,wm(0xf3ead2),true);
@@ -857,6 +876,12 @@ const AU={ctx:null,ready:false,muted:false,birdT:0,dripT:0,rainT:0,
   shift(down){if(!this.ready)return;const t=this.ctx.currentTime;const g=this.engG.gain;g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(.015,t+.05);g.linearRampToValueAtTime(down?.13:.07,t+.2);
     const o=this.voice(0,.12,.05,900);this.burst(o,t,.05,600,2,1);if(down)this.tone(o,t+.05,90,160,.18,.5,'sawtooth',.01)},
   clack(v){if(!this.ready)return;const t=this.ctx.currentTime;const o=this.voice(RR(-.3,.3),.16*v,.35);this.burst(o,t,.05,1900+Math.random()*900,3,1);this.tone(o,t,1250+Math.random()*300,900,.08,.5,'triangle',.002)},
+  fireInit(){if(this.fireG||!this.ready)return;const C=this.ctx;this.fireG=C.createGain();this.fireG.gain.value=0;const lp=C.createBiquadFilter();lp.type='lowpass';lp.frequency.value=650;
+    const src=this.loop(this.brown);src.connect(lp);lp.connect(this.fireG);this.fireG.connect(this.master);this.fireLv=0},
+  fireLevel(v,dt=.016){if(!this.ready)return;if(v>0)this.fireInit();if(!this.fireG)return;this.fireLv=v;this.set(this.fireG.gain,v*.22,.3);
+    if(v>.02&&Math.random()<v*dt*7){const t=this.ctx.currentTime;const o=this.voice(RR(-.4,.4),.12*v*RR(.4,1),.15);this.burst(o,t,RR(.008,.02),RR(1800,4200),RR(1,3),1);if(Math.random()<.25)this.burst(o,t+RR(.03,.09),.012,RR(2500,5000),2,.7)}},
+  fireStart(){if(!this.ready)return;const t=this.ctx.currentTime;const o=this.voice(0,.1,.3,3000);this.burst(o,t,.35,900,.6,1);for(let i=0;i<6;i++)this.burst(o,t+.1+i*.07,.015,3000,2,.8)},
+  fireHiss(){if(!this.ready)return;const t=this.ctx.currentTime;const o=this.voice(0,.1,.4);this.burst(o,t,1.2,5000,.5,1,'highpass')},
   beep(f,d){if(!this.ready)return;const o=this.voice(0,.07,.05);this.tone(o,this.ctx.currentTime+.005,f,f,d,1,'sine',.004)},
   cast(){if(!this.ready)return;const o=this.voice(0,.1,.1);this.burst(o,this.ctx.currentTime,.35,1800,.7,.8,'bandpass')},
   plop(){if(!this.ready)return;const o=this.voice(0,.12,.4);this.tone(o,this.ctx.currentTime,500,1100,.09,1,'sine',.003)},
@@ -912,6 +937,10 @@ const AU={ctx:null,ready:false,muted:false,birdT:0,dripT:0,rainT:0,
     else if(kind==='owl')this.bird('owl');
     else if(kind==='fox'){const o=this.voice(panv,.08*v,.6,3000);this.tone(o,t,850,1350,.16,1,'triangle',.01);this.tone(o,t+.3,800,1300,.14,.8,'triangle',.01)}
     else if(kind==='bear'){const o=this.voice(panv,.14*v,.5,500);this.burst(o,t,.6,180,1.2,1,'lowpass');this.tone(o,t,110,85,.6,.6,'sawtooth',.05)}
+    else if(kind==='moo'){const o=this.voice(panv,.16*v,.5,900);const tt=t;this.tone(o,tt,118,150,.35,.8,'sawtooth',.08);this.tone(o,tt+.33,150,105,1.1,1,'sawtooth',.05);this.tone(o,tt,236,300,.35,.25,'triangle',.08);this.tone(o,tt+.33,300,210,1.1,.3,'triangle',.05)}
+    else if(kind==='howl'){const o=this.voice(panv,.09*Math.max(v,.35),1.4,1800);const b=330+Math.random()*60;this.tone(o,t,b,b*1.9,.9,.8,'sine',.25);this.tone(o,t+.9,b*1.9,b*1.75,1.6,1,'sine',.02);this.tone(o,t+2.5,b*1.75,b*1.2,1.2,.7,'sine',.02);this.tone(o,t+.9,b*3.8,b*3.5,1.6,.12,'sine',.1)}
+    else if(kind==='growl'){const o=this.voice(panv,.16*v,.7,420);this.burst(o,t,1.4,110,1.5,1,'lowpass');this.tone(o,t,72,58,1.4,.7,'sawtooth',.2);this.tone(o,t,80,64,1.3,.4,'square',.25)}
+    else if(kind==='grunt'){const o=this.voice(panv,.12*v,.4,700);for(let i=0;i<3;i++){this.tone(o,t+i*.22,150,105,.14,1,'sawtooth',.01);this.burst(o,t+i*.22,.12,300,1,.6,'lowpass')}}
     else if(kind==='spirit'){const o=this.voice(panv,.07,1);for(let i=0;i<14;i++){const f=2000+Math.random()*3500;this.tone(o,t+i*.18+Math.random()*.1,f,f,1.4,.4,'sine',.01)}}},
   update(dt,s){if(!this.ready)return;const g=s.gust,alt=s.alt01;const calmFx=s.spirit?.35:1;
     this.set(this.windG.gain,((.05+.3*alt)*(.45+g*1.1)+(s.fly||0)*.35)*calmFx,.4);this.set(this.windF.frequency,240+g*420+alt*260,.4);
@@ -956,7 +985,7 @@ addEventListener('keydown',e=>{const tg=e.target&&e.target.tagName;if(tg==='INPU
   if(!$('manov').classList.contains('hidden')&&(e.code==='KeyL'||e.code==='Escape')){e.preventDefault();act('manual');return}
   if(e.code==='Space'||e.code==='Tab')e.preventDefault();if(e.ctrlKey&&started&&['KeyS','KeyD','KeyA','KeyQ','KeyF','KeyB'].includes(e.code))e.preventDefault();keys[e.code]=true;if(!started||e.repeat)return;
   const k={KeyV:'view',KeyT:'tod',KeyC:'dex',KeyM:'mute',KeyH:'photo',KeyG:'gfx',KeyN:'map',Tab:'map',KeyY:'season',KeyK:'wishes',KeyL:'manual'}[e.code];if(k)act(k);
-  if(e.code==='Space'&&!overlayOpen()&&!GL.on){if(placing)dropStone();else if(FS.state==='bite')fishKey();else if(FS.state==='fight'){}else player.jumpReq=true}if(e.code==='KeyE'&&!overlayOpen())interact();if(e.code==='KeyR'&&!overlayOpen())fishKey();if(e.code==='KeyX'&&!overlayOpen())toggleLight();if(e.code==='KeyF'&&!overlayOpen())toggleBike();if(!overlayOpen()){const em={Digit1:'wave',Digit2:'clap',Digit3:'sit',Digit4:'dance',Numpad1:'wave',Numpad2:'clap',Numpad3:'sit',Numpad4:'dance'}[e.code];if(em)doEmote(em)}if(bike.riding&&!overlayOpen()){if(e.code==='ShiftLeft'||e.code==='ShiftRight')gearUp();if(e.code==='ControlLeft'||e.code==='ControlRight'||e.code==='KeyQ')gearDown()}if(e.code==='KeyB'&&!overlayOpen())summonBike();
+  if(e.code==='Space'&&!overlayOpen()&&!GL.on){if(placing)dropStone();else if(FS.state==='bite')fishKey();else if(FS.state==='fight'){}else player.jumpReq=true}if(e.code==='KeyE'&&!overlayOpen())interact();if(e.code==='KeyR'&&!overlayOpen())fishKey();if(e.code==='KeyX'&&!overlayOpen())toggleLight();if(e.code==='KeyJ'&&!overlayOpen())fireKey();if(e.code==='KeyF'&&!overlayOpen())toggleBike();if(!overlayOpen()){const em={Digit1:'wave',Digit2:'clap',Digit3:'sit',Digit4:'dance',Numpad1:'wave',Numpad2:'clap',Numpad3:'sit',Numpad4:'dance'}[e.code];if(em)doEmote(em)}if(bike.riding&&!overlayOpen()){if(e.code==='ShiftLeft'||e.code==='ShiftRight')gearUp();if(e.code==='ControlLeft'||e.code==='ControlRight'||e.code==='KeyQ')gearDown()}if(e.code==='KeyB'&&!overlayOpen())summonBike();
   if(e.code==='Escape'){cancelPlacing();if(!dexEl.classList.contains('hidden'))act('dex');if(!mapEl.classList.contains('hidden'))act('map')}});
 addEventListener('keyup',e=>{keys[e.code]=false});addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
 let drag=null,joy=null;const joyEl=$('joy'),joyK=$('joyk');
@@ -1253,9 +1282,11 @@ function pickSpecies(zone,boost){const tod=todIdx;const avail=SPECIES.filter(s=>
   if(firstSpawn){firstSpawn=false;return avail.find(s=>s.rar==='common')}
   const w={};for(const r in RW){const list=avail.filter(s=>s.rar===r);if(!list.length)continue;let x=RW[r];if(r==='rare'||r==='epic'||r==='legendary')x*=boost;else if(r==='uncommon')x*=1+(boost-1)*.5;if(r==='legendary'&&tod===0)x*=1.5;if(r==='rare'&&phen.rain>.3)x*=2.5;w[r]=x}
   const rr=pickW(w);const list=avail.filter(s=>s.rar===rr);
-  const ww=list.map(s=>s.id==='owl'?(tod>=2?2.5:tod===1?.5:1):s.id==='fox'&&phen.rain>.3?4:s.id==='raccoondog'&&pondDist(player.pos.x,player.pos.z).d<40?2:1);let q=Math.random()*ww.reduce((a,b)=>a+b,0);
+  const ww=list.map(s=>s.id==='wolf'?(tod===3?3:tod===2?1.5:.6):s.id==='tiger'?(tod>=2?2:.7):s.id==='cow'?(tod===3?.15:1):s.id==='owl'?(tod>=2?2.5:tod===1?.5:1):s.id==='fox'&&phen.rain>.3?4:s.id==='raccoondog'&&pondDist(player.pos.x,player.pos.z).d<40?2:1);let q=Math.random()*ww.reduce((a,b)=>a+b,0);
   for(let i=0;i<list.length;i++){q-=ww[i];if(q<=0)return list[i]}return list[0]}
-function rollTemper(sp){if(sp.kind==='spirit')return'spirit';const c=player.calm;if(sp.id==='bear')return Math.random()<.6?'calm':'shy';
+const DANGER=new Set(['bear','tiger','boar']);
+function rollTemper(sp){if(sp.kind==='spirit')return'spirit';const c=player.calm;if(sp.id==='bear')return Math.random()<.6?'calm':'shy';if(sp.id==='tiger')return'calm';if(sp.id==='boar')return Math.random()<.7?'shy':'calm';
+  if(sp.id==='cow')return pickW({calm:.55,friendly:.4+.3*c,shy:.05});if(sp.id==='wolf')return pickW({shy:.5-.25*c,calm:.38,friendly:.12+.25*c});
   return pickW({shy:Math.max(.1,.45-.32*c),calm:.33,friendly:.22+.42*c})}
 function trySpawn(force,temper){const zone=zoneAt(player.pos.y);const boost=1+player.calm*1.5+(Math.hypot(player.pos.x,player.pos.z)<60?1.2:0);const sp=force||pickSpecies(zone,boost);if(!sp)return false;
   for(let k=0;k<14;k++){const a=yaw+(Math.random()-.5)*1.9;const d=sp.kind==='spirit'?RR(26,40):sp.kind==='owl'?RR(14,24):RR(16,34);const x=player.pos.x+Math.sin(a)*d,z=player.pos.z+Math.cos(a)*d;
@@ -1263,12 +1294,17 @@ function trySpawn(force,temper){const zone=zoneAt(player.pos.y);const boost=1+pl
     if(collideTrunk(x,z,.8))continue;
     const{rig,extra}=buildAnimal(sp);rig.root.position.set(x,terrainHeight(x,z),z);rig.root.rotation.y=Math.random()*6.28;scene.add(rig.root);
     const an={sp,rig,extra,temper:temper||rollTemper(sp),state:sp.kind==='owl'?'perch':'idle',t:RR(1,3),dir:rig.root.rotation.y,phase:0,age:0,seen:false,fade:1,neckT:0,spd:0,jumpT:0,heartT:RR(1,3),friendT:RR(50,80),stillNear:0,play:'wag',sit:0,tilt:0};
-    animals.push(an);if(sp.id==='owl'&&todIdx>=2)setTimeout(()=>AU.animal('owl',0,d),1500);return an}return false}
+    animals.push(an);if(sp.id==='owl'&&todIdx>=2)setTimeout(()=>AU.animal('owl',0,d),1500);
+    if(sp.pack){const n=Math.floor(RR(sp.pack[0],sp.pack[1]+.99));for(let m=0;m<n;m++){const ox=x+RR(-4,4),oz=z+RR(-4,4);if(pondDist(ox,oz).d<1.5||collideTrunk(ox,oz,.8))continue;
+      const b=buildAnimal(sp);b.rig.root.position.set(ox,terrainHeight(ox,oz),oz);b.rig.root.rotation.y=an.dir+RR(-.6,.6);const sc=RR(.8,1.05);b.rig.root.scale.setScalar(sc);scene.add(b.rig.root);
+      animals.push({...an,rig:b.rig,extra:b.extra,dir:b.rig.root.rotation.y,t:RR(1,4),phase:RR(0,6),heartT:RR(1,3),friendT:RR(50,80)})}}
+    if(sp.id==='wolf'&&todIdx>=2)setTimeout(()=>AU.animal('howl',panOf(x,z),d),1200);if(sp.id==='tiger')setTimeout(()=>AU.animal('growl',panOf(x,z),d),2500);if(sp.id==='cow'&&Math.random()<.6)setTimeout(()=>AU.animal('moo',panOf(x,z),d),1800);
+    return an}return false}
 function collideTrunk(x,z,rad){const cx=Math.floor(x/CELL),cz=Math.floor(z/CELL);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const l=trunkGrid.get((cx+i)+','+(cz+j));if(!l)continue;for(const t of l){if(Math.hypot(t.x-x,t.z-z)<t.r+rad)return t}}return null}
 function removeAnimal(a){scene.remove(a.rig.root);const i=animals.indexOf(a);if(i>=0)animals.splice(i,1)}
 function panOf(x,z){const ang=Math.atan2(x-camera.position.x,z-camera.position.z);return clamp(-Math.sin(angDiff(ang,yaw)),-1,1)}
 function startFlee(a,toP,dist){a.state='flee';a.dir=toP+Math.PI+(Math.random()-.5)*.8;a.t=RR(4,6);a.sit=0;const sp=a.sp;
-  const snd=sp.id==='roe'?'roe':sp.id==='pheasant'?'pheasant':sp.id==='bear'?'bear':sp.id==='fox'&&Math.random()<.5?'fox':'rustle';AU.animal(snd,panOf(a.rig.root.position.x,a.rig.root.position.z),dist)}
+  const snd=sp.id==='roe'?'roe':sp.id==='pheasant'?'pheasant':sp.id==='bear'?'bear':sp.id==='tiger'?'growl':sp.id==='boar'?'grunt':sp.id==='cow'?'moo':sp.id==='fox'&&Math.random()<.5?'fox':'rustle';AU.animal(snd,panOf(a.rig.root.position.x,a.rig.root.position.z),dist)}
 const heartPos=new THREE.Vector3();
 function headWorld(a){heartPos.copy(a.rig.root.position);heartPos.y+=(a.sp.size||.5)*1.1+.35;return heartPos}
 function updateAnimals(dt){pm4.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);frustum.setFromProjectionMatrix(pm4);
@@ -1314,7 +1350,7 @@ function updateAnimals(dt){pm4.multiplyMatrices(camera.projectionMatrix,camera.m
         else{a.state='approach'}}
       else{
         if(a.temper==='calm'&&dist<sp.flee*1.6){a.state='watch';faceP=true;a.neckT=-.25;
-          if(player.speed<.3&&dist<10){a.stillNear+=dt;if(a.stillNear>5){a.stillNear=0;if(Math.random()<.5&&sp.id!=='bear'){a.temper='friendly';a.state='approach';toast('마음을 열었어요',sp.name.split(' (')[0],'천천히 다가오고 있어요','#ffb3c4')}}}}
+          if(player.speed<.3&&dist<10){a.stillNear+=dt;if(a.stillNear>5){a.stillNear=0;if(Math.random()<.5&&!DANGER.has(sp.id)){a.temper='friendly';a.state='approach';toast('마음을 열었어요',sp.name.split(' (')[0],'천천히 다가오고 있어요','#ffb3c4')}}}}
         else{if(a.state==='watch')a.state='idle';
           if(a.t<=0){const r=Math.random();if(a.state==='idle'&&r<.55){a.state='walk';a.dir=root.rotation.y+(Math.random()-.5)*2.2;a.t=RR(2,5)}else{a.state='idle';a.t=RR(2,5);a.neckT=Math.random()<.6&&sp.kind!=='hop'?.95:dist<25?-.25:0}}
           if(a.state==='walk'){target=sp.walk;a.neckT=0}
@@ -1339,7 +1375,9 @@ function discover(a){const sp=a.sp,r=RAR[sp.rar];const first=!dex[sp.id];dex[sp.
   if(sp.rar==='legendary')big('백록','안개 속에 흰 사슴이 서 있다… 조용히, 마음을 가라앉히고 지켜보세요',7000)}
 function nearestInteractable(){let best=null,bd=1e9;for(const a of animals){if(['flee','vanish','fly'].includes(a.state))continue;const d=Math.hypot(a.rig.root.position.x-player.pos.x,a.rig.root.position.z-player.pos.z);
   const lim=a.sp.kind==='owl'?3.2:a.sp.kind==='spirit'?4.5:2.6+(a.sp.size||.5)*1.2;if(d<lim&&d<bd){bd=d;best=a}}return best}
-function interact(){if(GL.on||FS.state!=='idle')return;if(nearGlider()){launchGlider();return}if(stoneInteract())return;const a=nearestInteractable();if(!a)return;const sp=a.sp,nm=sp.name.split(' (')[0],dist=Math.hypot(a.rig.root.position.x-player.pos.x,a.rig.root.position.z-player.pos.z);const pan=panOf(a.rig.root.position.x,a.rig.root.position.z);
+function interact(){if(GL.on||FS.state!=='idle')return;if(nearGlider()){launchGlider();return}if(stoneInteract())return;const a=nearestInteractable();if(!a){const f=nearFire(3.8);if(f)sitAtFire(f);return}const sp=a.sp,nm=sp.name.split(' (')[0],dist=Math.hypot(a.rig.root.position.x-player.pos.x,a.rig.root.position.z-player.pos.z);const pan=panOf(a.rig.root.position.x,a.rig.root.position.z);
+  if(sp.id==='tiger'){toast('숨을 고르고…','호랑이','눈을 마주친 채 천천히 뒤로 물러나요. 호랑이는 잠시 바라보다 숲으로 사라져요.','#ffcf7a');AU.animal('growl',pan,dist);a.temper='calm';a.state='flee';a.dir=Math.atan2(a.rig.root.position.x-player.pos.x,a.rig.root.position.z-player.pos.z);a.t=RR(5,7);return}
+  if(sp.id==='boar'){toast('조심!','멧돼지','멧돼지에게는 다가가지 않아요. 놀라면 돌진할 수 있어요.','#ffb08a');a.temper='shy';startFlee(a,Math.atan2(player.pos.x-a.rig.root.position.x,player.pos.z-a.rig.root.position.z),dist);return}
   if(sp.id==='bear'){toast('조심!','반달가슴곰','곰에게는 다가가지 않아요. 천천히 뒤로 물러나 거리를 두세요.','#ffb08a');a.temper='shy';startFlee(a,Math.atan2(player.pos.x-a.rig.root.position.x,player.pos.z-a.rig.root.position.z),dist);return}
   if(sp.kind==='spirit'){if(a.state==='bless'&&!a.bowed){a.bowed=true;a.t=Math.max(a.t,8);spawnHearts(headWorld(a),8);bond[sp.id]=(bond[sp.id]||0)+1;saveDex();AU.chime(4);big('백록과 마음이 닿았다','따스한 빛이 숲에 번집니다',6000)}return}
   if(a.temper==='shy'){toast('앗',nm,'깜짝 놀라 달아났어요. 조금 더 고요해진 뒤에 다가가 보세요.','#d6dccb');startFlee(a,Math.atan2(dist?player.pos.x-a.rig.root.position.x:1,player.pos.z-a.rig.root.position.z),dist);return}
@@ -1664,6 +1702,57 @@ function updateCamera(dt){if(bike.riding&&T-lastLook>1.6&&Math.abs(bike.speed)>1
     camWant.copy(camTarget).addScaledVector(d,-cd);const gy=terrainHeight(camWant.x,camWant.z)+.5;if(camWant.y<gy)camWant.y=gy;
     if(!camInit){camera.position.copy(camWant);camInit=true}else camera.position.lerp(camWant,1-Math.exp(-dt*12));const cy=terrainHeight(camera.position.x,camera.position.z)+.35;if(camera.position.y<cy)camera.position.y=cy;camera.lookAt(camTarget)}}
 
+/* ================= 모닥불 ================= */
+const FIRES=[];const FIRE_LIFE=420;
+const flameTex=(()=>{const c=document.createElement('canvas');c.width=64;c.height=128;const g=c.getContext('2d');
+  const gr=g.createRadialGradient(32,92,2,32,80,46);gr.addColorStop(0,'rgba(255,250,215,1)');gr.addColorStop(.25,'rgba(255,196,90,.95)');gr.addColorStop(.55,'rgba(255,110,30,.55)');gr.addColorStop(1,'rgba(200,40,10,0)');
+  g.fillStyle=gr;g.beginPath();g.moveTo(32,4);g.bezierCurveTo(50,40,62,70,58,96);g.bezierCurveTo(54,122,10,122,6,96);g.bezierCurveTo(2,70,14,40,32,4);g.fill();const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t})();
+const smokeTex=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');const gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(200,200,200,.55)');gr.addColorStop(1,'rgba(200,200,200,0)');g.fillStyle=gr;g.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)})();
+const fireLight=new THREE.PointLight(0xff8a3a,0,22,1.6);fireLight.castShadow=false;scene.add(fireLight);
+const logMat=M(0x5a3b22),charMat=M(0x231a14),stoneMat=M(0x77736b),emberMat=new THREE.MeshBasicMaterial({color:0xff6a20});
+function makeFire(x,z,owner,age=0){killFire(owner,false);const y=terrainHeight(x,z);const g=new THREE.Group();g.position.set(x,y,z);scene.add(g);g.updateMatrixWorld(true);
+  for(let i=0;i<9;i++){const a=i/9*Math.PI*2;part(GS,stoneMat,Math.cos(a)*.62,.06,Math.sin(a)*.62,RR(.12,.17),RR(.08,.12),RR(.11,.15),g,0,a,0)}
+  part(GC,charMat,0,.015,0,.42,.03,.42,g);
+  for(let i=0;i<5;i++){const a=i/5*Math.PI*2+.3;const l=part(GC,logMat,Math.cos(a)*.2,.28,Math.sin(a)*.2,.055,.72,.055,g);l.rotation.set(0,0,0);l.lookAt(new THREE.Vector3(x,y+.9,z));l.rotateX(Math.PI/2)}
+  const ember=part(GS,emberMat,0,.07,0,.26,.06,.26,g);ember.castShadow=false;
+  const flames=[];for(let i=0;i<5;i++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:flameTex,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,fog:true}));
+    sp.position.set(RR(-.12,.12),.45,RR(-.12,.12));sp.userData={ph:RR(0,6),s:i===0?1:RR(.5,.8)};g.add(sp);flames.push(sp)}
+  const smoke=[];for(let i=0;i<7;i++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:smokeTex,depthWrite:false,transparent:true,opacity:0}));sp.userData={t:i/7};g.add(sp);smoke.push(sp)}
+  const NE=26,ep=new Float32Array(NE*3),ev=[];for(let i=0;i<NE;i++){ev.push({t:Math.random(),x:RR(-.2,.2),z:RR(-.2,.2),vx:RR(-.15,.15),vz:RR(-.15,.15)})}
+  const eg=new THREE.BufferGeometry();eg.setAttribute('position',new THREE.BufferAttribute(ep,3));const emb=new THREE.Points(eg,new THREE.PointsMaterial({color:0xffa040,size:.06,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));emb.frustumCulled=false;g.add(emb);
+  const f={owner,own:owner===NET.id||owner==='me',x,z,y,g,flames,smoke,emb,ev,ember,age,amt:age?1:0,out:false};FIRES.push(f);return f}
+function killFire(owner,puff){const i=FIRES.findIndex(f=>f.owner===owner);if(i<0)return;const f=FIRES[i];if(puff&&!f.out){f.out=true;f.outT=2.5;return}scene.remove(f.g);FIRES.splice(i,1)}
+function myFireId(){return NET.id||'me'}
+function myFire(){return FIRES.find(f=>f.owner===myFireId()&&!f.out)}
+function nearFire(r){let best=null,bd=r;for(const f of FIRES){if(f.out)continue;const d=Math.hypot(f.x-player.pos.x,f.z-player.pos.z);if(d<bd){bd=d;best=f}}return best}
+function sendMyFire(){const f=myFire();if(f&&NET.ready&&NET.ch)NET.ch.send({type:'broadcast',event:'fire',payload:{i:NET.id,a:'on',x:+f.x.toFixed(2),z:+f.z.toFixed(2),age:Math.round(f.age)}})}
+function fireKey(){if(!started||GL.on||bike.riding||carrying||placing||FS.state!=='idle')return;
+  const mine=myFire();if(mine&&Math.hypot(mine.x-player.pos.x,mine.z-player.pos.z)<4){mine.out=true;mine.outT=2.5;AU.fireHiss();toast('모닥불','불을 껐어요','타고 남은 연기가 피어올라요','#ffb37a');
+    if(NET.ready&&NET.ch)NET.ch.send({type:'broadcast',event:'fire',payload:{i:NET.id,a:'off'}});return}
+  const fx=player.pos.x+Math.sin(player.face)*2.2,fz=player.pos.z+Math.cos(player.face)*2.2;
+  if(pondDist(fx,fz).d<1.2){toast('모닥불','물가에는 불을 피울 수 없어요','조금 떨어진 마른 땅에서 해보세요','#d6dccb');return}
+  const sl=Math.abs(terrainHeight(fx+.8,fz)-terrainHeight(fx-.8,fz))+Math.abs(terrainHeight(fx,fz+.8)-terrainHeight(fx,fz-.8));if(sl>1.1||collideTrunk(fx,fz,.9)){toast('모닥불','여기는 불 피우기 어려워요','평평하고 나무에서 떨어진 곳을 찾아보세요','#d6dccb');return}
+  if(mine)killFire(mine.owner,false);makeFire(fx,fz,myFireId());AU.fireStart();
+  toast('모닥불',mine?'모닥불을 이 자리로 옮겼어요':'모닥불을 피웠어요',`불 앞에서 E를 누르면 앉을 수 있어요 · 약 ${Math.round(FIRE_LIFE/60)}분 동안 타요`,'#ffb37a');sendMyFire()}
+function sitAtFire(f){doEmote('sit');if(player.emote&&player.emote.type==='sit'){player.face=Math.atan2(f.x-player.pos.x,f.z-player.pos.z);player.fireSit=0}}
+const fv=new THREE.Vector3();
+function updateFires(dt){let near=null,nd=1e9;
+  for(let k=FIRES.length-1;k>=0;k--){const f=FIRES[k];f.age+=dt;if(!f.out&&f.age>FIRE_LIFE){f.out=true;f.outT=4;if(f.own)toast('모닥불','모닥불이 다 타서 꺼졌어요','J로 다시 피울 수 있어요','#ffb37a')}
+    if(f.out){f.outT-=dt;f.amt=Math.max(0,f.amt-dt*.7);if(f.outT<=0){scene.remove(f.g);FIRES.splice(k,1);continue}}else f.amt=Math.min(1,f.amt+dt*.5);
+    const d=Math.hypot(f.x-camera.position.x,f.z-camera.position.z);if(!f.out&&d<nd){nd=d;near=f}
+    const vis=d<160;f.g.visible=vis;if(!vis)continue;const life=1-Math.max(0,(f.age-FIRE_LIFE*.85)/(FIRE_LIFE*.15)),a=f.amt*(f.out?1:life*.7+.3),wind=Math.sin(T*.7)*.08;
+    f.flames.forEach((sp,i)=>{const u=sp.userData,fl=.75+.25*Math.sin(T*9+u.ph)*Math.sin(T*13.7+u.ph*2)+.1*Math.sin(T*23+u.ph);const h=(.95+.25*fl)*u.s*a;
+      sp.scale.set(h*.8,h*1.6,1);sp.position.set(Math.sin(u.ph+T*.6)*.08*(i?1:0)+wind*h,.1+h*.7,Math.cos(u.ph+T*.5)*.08*(i?1:0));sp.material.opacity=Math.min(1,a*1.2)*(.75+.25*fl)});
+    f.ember.material.color.setRGB(1,.35+.15*Math.sin(T*3),.08).multiplyScalar(.5+f.amt*1.6);
+    f.smoke.forEach(sp=>{const u=sp.userData;u.t+=dt*.16;if(u.t>1)u.t-=1;const t=u.t,sa=f.out?1.6:.5;sp.position.set(wind*t*14+Math.sin(t*6+f.x)*.3,1+t*5.5,Math.cos(t*5)*.25);sp.scale.setScalar(.5+t*2.4);sp.material.opacity=sa*.32*Math.sin(Math.PI*t)*Math.max(f.amt,f.out?.6:0)});
+    const ep=f.emb.geometry.attributes.position;for(let i=0;i<f.ev.length;i++){const e=f.ev[i];e.t+=dt*RR(.35,.6);if(e.t>1){e.t=0;e.x=RR(-.2,.2);e.z=RR(-.2,.2)}ep.setXYZ(i,e.x+e.vx*e.t*2+wind*e.t*6,.3+e.t*e.t*3.2,e.z+e.vz*e.t*2)}ep.needsUpdate=true;f.emb.material.opacity=a*(f.out?0:1)}
+  // 가장 가까운 불 하나만 실제 조명으로
+  if(near){const fl=.8+.2*Math.sin(T*11)*Math.sin(T*7.3)+.06*Math.sin(T*29);fireLight.position.set(near.x,near.y+1,near.z);fireLight.intensity=near.amt*fl*(28+cur.night*30);fireLight.visible=true}else{fireLight.intensity=0;fireLight.visible=false}
+  const pd=near?Math.hypot(near.x-player.pos.x,near.z-player.pos.z):99;AU.fireLevel(near?clamp(1-pd/22,0,1)*near.amt:0,dt);
+  if(player.emote&&player.emote.type==='sit'&&pd<4.5){player.fireSit=(player.fireSit||0)+dt;player.calm=clamp(player.calm+dt/30,0,1);if(player.fireSit>14&&!player.fireSeen){player.fireSeen=true;seePhen('firegaze')}
+    if(player.fireSit>6&&!player.warmMsg&&(seasonIdx===3||cur.night>.5)){player.warmMsg=true;toast('모닥불',seasonIdx===3?'꽁꽁 언 손이 녹아요':'밤공기가 차갑지만 불 곁은 따뜻해요','','#ffcf9a')}}else if(player.fireSit)player.fireSit=0}
+$('tbFire').addEventListener('click',()=>fireKey());
+
 /* ================= emotes ================= */
 const EMO={wave:{ico:'👋',dur:2.6},clap:{ico:'👏',dur:2.4},sit:{ico:'🧘',dur:1e9},dance:{ico:'🎵',dur:4.2}};
 function emoBubble(ico){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');g.fillStyle='rgba(250,247,238,.95)';g.beginPath();g.arc(64,58,50,0,7);g.fill();g.beginPath();g.moveTo(52,100);g.lineTo(64,124);g.lineTo(76,100);g.fill();
@@ -1698,7 +1787,7 @@ function riderPose(h,on){if(on){h.g.position.set(0,.12,-.24);h.g.rotation.set(.2
 function getPeer(id,name,ci){let p=NET.peers.get(id);if(p){if(name&&name!==p.name){p.name=name;p.h.g.remove(p.tag);p.tag=nameTag(name);p.h.g.add(p.tag)}return p}
   const col=AVA[(ci|0)%AVA.length];const h=buildHiker(col[0],col[1]);h.g.visible=false;scene.add(h.g);const tag=nameTag(cleanName(name));h.g.add(tag);
   p={id,name:cleanName(name),ci:ci|0,h,tag,bk:null,riding:false,t:null,pos:new THREE.Vector3(),face:0,phase:0,seen:T,init:false};NET.peers.set(id,p);return p}
-function removePeer(id){const p=NET.peers.get(id);if(!p)return;scene.remove(p.h.g);if(p.bk)scene.remove(p.bk.g);NET.peers.delete(id);updateOnline()}
+function removePeer(id){const p=NET.peers.get(id);if(!p)return;killFire(id,false);scene.remove(p.h.g);if(p.bk)scene.remove(p.bk.g);NET.peers.delete(id);updateOnline()}
 function updateOnline(){const n=NET.peers.size;$('online').textContent=n?`${n+1}명 (나 포함)`:(NET.ready?'혼자':'연결 중…')}
 async function startNet(name){NET.name=cleanName(name);NET.ci=Math.floor(Math.random()*AVA.length);
   if(NET.myTag)hiker.g.remove(NET.myTag);NET.myTag=nameTag(NET.name+' (나)');hiker.g.add(NET.myTag);
@@ -1710,8 +1799,9 @@ async function startNet(name){NET.name=cleanName(name);NET.ci=Math.floor(Math.ra
     .on('broadcast',{event:'emote'},({payload:d})=>{if(!d||d.i===NET.id||!EMO[d.e])return;const p=NET.peers.get(d.i);if(!p)return;p.emote={type:d.e,t:0};showBubble(p.h,d.e)})
     .on('broadcast',{event:'catch'},({payload:d})=>{if(!d||d.i===NET.id)return;const f=FISH.find(q=>q.id===d.f);const p=NET.peers.get(d.i);if(!f||!p)return;holdFish(p.h,f,d.l);fishBubble(p.h,`${f.name} ${Math.round(d.l)}cm!`);p.bragT=8;
       toast('함께 걷기',`${p.name}님이 ${f.name} ${Math.round(d.l)}cm를 낚았어요!`,`${RAR[f.rar].n} · ${fmtW(d.w)}`,RAR[f.rar].c)})
-    .on('broadcast',{event:'hello'},({payload:d})=>{if(d&&d.i!==NET.id)NET.sendT=0})
-    .on('presence',{event:'join'},({key,newPresences})=>{if(key===NET.id)return;const m=newPresences&&newPresences[0];const p=getPeer(key,m&&m.name,m&&m.ci);p.seen=T;updateOnline();NET.sendT=0;if(NET.ready)toast('함께 걷기',`${p.name}님이 숲에 들어왔어요`,'지도(N)에서 위치를 볼 수 있어요','#9fd0ff')})
+    .on('broadcast',{event:'fire'},({payload:d})=>{if(!d||d.i===NET.id)return;if(d.a==='on')makeFire(d.x,d.z,d.i,d.age||0);else killFire(d.i,true)})
+    .on('broadcast',{event:'hello'},({payload:d})=>{if(d&&d.i!==NET.id){NET.sendT=0;sendMyFire()}})
+    .on('presence',{event:'join'},({key,newPresences})=>{if(key===NET.id)return;const m=newPresences&&newPresences[0];const p=getPeer(key,m&&m.name,m&&m.ci);p.seen=T;updateOnline();NET.sendT=0;setTimeout(sendMyFire,800);if(NET.ready)toast('함께 걷기',`${p.name}님이 숲에 들어왔어요`,'지도(N)에서 위치를 볼 수 있어요','#9fd0ff')})
     .on('presence',{event:'leave'},({key})=>{if(key===NET.id)return;const p=NET.peers.get(key);if(p)toast('함께 걷기',`${p.name}님이 숲을 떠났어요`,'','#9fd0ff');removePeer(key)})
     .on('presence',{event:'sync'},()=>{const st=ch.presenceState();for(const k in st){if(k===NET.id)continue;const m=st[k][0];getPeer(k,m&&m.name,m&&m.ci).seen=T}for(const k of[...NET.peers.keys()])if(!st[k])removePeer(k);updateOnline()})
     .subscribe(async status=>{if(status==='SUBSCRIBED'){NET.ready=true;try{await ch.track({name:NET.name,ci:NET.ci})}catch(e){}ch.send({type:'broadcast',event:'hello',payload:{i:NET.id}});NET.sendT=0;updateOnline()}
@@ -1746,7 +1836,8 @@ const clock=new THREE.Clock();let T=0,hudT=0,gust=.5,promptTxt='';const sunDir=n
 function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.05);T+=dt;
   updateTOD(dt);const alt01=clamp(player.pos.y/TOP,0,1);
   if(started){updatePlayer(dt);updateFishing(dt);updateTracks(dt);updateGlideWorld(dt);netSend(dt);updatePeers(dt);updateAnimals(dt);updateDust(dt);updateCairn(dt);updateShoot(dt);if(bike.riding){for(const a of animals){if(a.state==='flee'||a.state==='vanish'||a.state==='fly')continue;const d=Math.hypot(a.rig.root.position.x-bike.pos.x,a.rig.root.position.z-bike.pos.z);if(d<(Math.abs(bike.speed)>8?40:28))scareByEngine(a,d)}}else poseBike(dt);updateHearts(dt);updatePhen(dt,alt01);
-    const rate=GL.on?.4:bike.riding?.2:player.speed>6?.4:player.speed>.3?1:1+player.calm*1.6;spawnT-=dt*rate;if(spawnT<=0){if(animals.length<3&&trySpawn())spawnT=RR(12,26);else spawnT=3}}
+    const rate=GL.on?.4:bike.riding?.2:player.speed>6?.4:player.speed>.3?1:1+player.calm*1.6;spawnT-=dt*rate;if(spawnT<=0){if(animals.length<4&&trySpawn())spawnT=RR(12,26);else spawnT=3}
+    if(todIdx===3&&started&&zoneAt(player.pos.y)!=='low'&&Math.random()<dt/80)AU.animal('howl',RR(-.8,.8),70)}
   updateCamera(dt);
   gust=clamp(.5+vnoise(T*.11,3.7,9)*.55+vnoise(T*.37,1.1,4)*.18+phen.petals*.35,0,1);const spirit=animals.some(a=>a.sp.kind==='spirit'&&a.state!=='vanish');
   windU.uTime.value=T;windU.uWind.value=lerp(windU.uWind.value,(.2+gust*.9+alt01*.3+phen.rain*.2)*(spirit?.35:1),dt*2);
@@ -1777,15 +1868,16 @@ function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta()
     if(Math.floor(T*4)%2===0){$('alt').textContent=`${Math.round(player.pos.y*10)} m`;const idx=nearestPathIdx(player.pos.x,player.pos.z);const left=Math.max(0,PATH_LEN-PL[idx]);
       $('dist').textContent=player.summit&&Math.hypot(player.pos.x,player.pos.z)<20?'정상!':left>1000?`${(left/1000).toFixed(1)} km`:`${Math.round(left/10)*10} m`;
       $('calmfill').style.width=(player.calm*100)+'%';$('calmlabel').textContent=player.calm>.95?'고요함 — 숲이 당신을 받아들였어요':player.calm>.5?'고요함 — 숲이 조용해지고 있어요':'고요함 — 멈춰서 귀 기울이면 차올라요'}
-    const na=nearestInteractable();let txt='';if(na){const nm=na.sp.name.split(' (')[0];txt=na.sp.id==='bear'?`<b>E</b> 반달가슴곰 — 거리를 두세요`:na.sp.kind==='spirit'?(na.state==='bless'&&!na.bowed?`<b>E</b> 백록에게 인사하기`:''):`<b>E</b> ${josa(nm,'와','과')} 교감하기`}
+    const na=nearestInteractable();let txt='';if(na){const nm=na.sp.name.split(' (')[0];txt=DANGER.has(na.sp.id)?`<b>E</b> ${nm} — 거리를 두세요`:na.sp.kind==='spirit'?(na.state==='bless'&&!na.bowed?`<b>E</b> 백록에게 인사하기`:''):`<b>E</b> ${josa(nm,'와','과')} 교감하기`}
     if(placing)txt=`<b>E</b>/<b>Space</b> 돌 올려놓기 · <b>Esc</b> 취소`;else if(carrying)txt=nearCairn()?`<b>E</b> 돌탑에 올리기`:`돌탑 자리(납작한 받침돌)로 가져가세요 · <b>E</b> 내려놓기`;else if(!bike.riding&&nearestLoose())txt=`<b>E</b> 돌 줍기`;else if(nearCairn())txt=`<b>K</b> 소원 돌탑 기록 보기`;
     if(FS.state==='idle'&&!placing&&!carrying&&nearWater()&&!nearGlider()){const fw=`<b>R</b> ${frozen()?'얼음낚시하기':'낚시하기'}`;txt=txt?txt+' · '+fw:fw}
+    {const nf=nearFire(3.8);if(nf&&!placing&&!carrying&&!bike.riding&&!GL.on){const ft=(player.emote&&player.emote.type==='sit'?'불멍 중… 움직이면 일어나요':'<b>E</b> 불 앞에 앉기')+(nf.own?' · <b>J</b> 불 끄기':'');txt=txt?txt+' · '+ft:ft}}
     if(GL.on)txt=`<b>W</b> 빠르게 · <b>S</b> 느리게 · <b>A/D</b> 선회 · 매가 맴도는 곳을 찾아보세요`;else if(nearGlider()&&!txt)txt=`<b>E</b> 행글라이더로 날기`;
     if(nearBike()&&!bike.riding)txt=txt?txt+` · <b>F</b> 바이크`:`<b>F</b> 엔듀로 바이크 타기`;if(bike.riding&&Math.abs(bike.speed)<1)txt=`<b>F</b> 바이크에서 내리기`;
     if(isTouch)$('tbFish').classList.toggle('hidden',!(nearWater()||FS.state!=='idle'));
     if(txt!==promptTxt){promptTxt=txt;$('prompt').innerHTML=txt;$('prompt').classList.toggle('hidden',!txt)}
     if(!mapEl.classList.contains('hidden')&&Math.floor(T*4)%2===0)drawBigMap()}
-  updateLights(dt);
+  updateLights(dt);updateFires(dt);
   if(!composer&&postOK&&gfxHigh)initPost();
   if(composer&&gfxHigh&&postOK){composer.passes[0].camera=camera;const G=GRADE[todIdx],k=1-Math.exp(-dt*.9);gcur.sh.lerp(tv3.set(...G.sh),k);gcur.hl.lerp(tv3.set(...G.hl),k);gcur.glow.lerp(tv3.set(...G.glow),k);
     for(const q of['sat','con','gi','bl'])gcur[q]=lerp(gcur[q],G[q],k);const gu=gradePass.uniforms;gu.uSat.value=gcur.sat*(1-phen.rain*.2);gu.uCon.value=gcur.con;gu.uLift.value.lerp(tv3.set(...(G.lift||[.008,.01,.014])),k);
@@ -1842,7 +1934,7 @@ addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updat
     $('start').classList.add('hidden');$('hud').classList.remove('hidden');started=true;player.startTime=performance.now();clock.getDelta();sizeMini();
     if(isTouch){$('touchbtns').classList.remove('hidden');$('hint').textContent='왼쪽 드래그 이동 · 오른쪽 드래그 둘러보기'}
     setTimeout(()=>{$('hint').style.opacity=0},16000);setTimeout(()=>toast('도움말','L 키로 설명서를 열 수 있어요','조작법과 지금까지의 모든 상호작용이 정리돼 있어요','#e8dcc0'),2500)});
-  window.__dbg_unused={setPost:v=>{postOK=v},FS,FISH,PONDS,fishKey,caught,pickFish,startFishing,TR,footMark,trackMark,getPeer,NET,GL,launchGlider,THERMALS,updateGlide,ridgeLift,thermalLift,player,animals,bike,toggleBike,keys,act,interact,get yaw(){return yaw},set yaw(v){yaw=v},set pitch(v){pitch=v},
+  window.__dbg_unused={setPost:v=>{postOK=v},th:terrainHeight,FIRES,fireKey,animals,buildAnimal,SPECIES,scene,FS,FISH,PONDS,fishKey,caught,pickFish,startFishing,TR,footMark,trackMark,getPeer,NET,GL,launchGlider,THERMALS,updateGlide,ridgeLift,thermalLift,player,animals,bike,toggleBike,keys,act,interact,get yaw(){return yaw},set yaw(v){yaw=v},set pitch(v){pitch=v},
     force:(id,temper)=>trySpawn(SPECIES.find(s=>s.id===id),temper),rain:()=>startRain(),petals:()=>startPetals(),rainbow:(d)=>{startRainbow();phen.dbl=!!d},phen,setTod:i=>{todIdx=i;todLabel()},setSeason:i=>{seasonIdx=i;todLabel()},snap:()=>{const T2=TODS[todIdx];for(const k of['el','az','si','hi','fm','sh','blink','mo','exp','cloud','night'])cur[k]=T2[k];for(const k of['sun','hs','hg','top','hor','fog','mote'])cur[k].set(T2[k]);const v=SEASONS[seasonIdx].v;seasonU.uSeason.value.set(...v)},tower,looseStones,W,openWish,addWish,stoneInteract,get placing(){return placing},spawnShoot};
 })();
 </script>
